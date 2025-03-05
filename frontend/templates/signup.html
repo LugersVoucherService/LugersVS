@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup | Lugers VS</title>
+    <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    <style>
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auth-container {
+            margin: 0;
+            background: var(--dark-surface);
+            width: 100%;
+            max-width: 600px;
+            padding: 2.5rem;
+        }
+        .dark-mode .auth-container {
+            background: var(--dark-surface);
+        }
+        .light-mode .auth-container {
+            background: var(--light-surface);
+        }
+        .form-error {
+            color: #ff4444;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        .form-success {
+            color: #00C851;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="background-shapes">
+        <div class="shape circle"></div>
+        <div class="shape triangle"></div>
+        <div class="shape square"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand">Lugers VS</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/vouches" class="nav-link">Vouches</a>
+            <a href="/login" class="nav-link">Profile</a>
+            <button id="themeToggle" class="theme-toggle">
+                <span class="theme-toggle-icon">🌑</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="auth-container">
+            <h2 class="auth-title">Create Account</h2>
+            <div class="auth-options">
+                <button class="auth-btn github-btn" id="githubAuth">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" class="auth-icon">
+                    Signup with GitHub
+                </button>
+                <button class="auth-btn google-btn" id="googleAuth">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" class="auth-icon">
+                    Signup with Google
+                </button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <form class="auth-form" id="signupForm">
+                    <div class="form-group">
+                        <input type="text" name="username" placeholder="Username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_-]*$" title="Username can only contain letters, numbers, underscores, and hyphens">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" required minlength="8">
+                        <p class="password-requirements">Password must be at least 8 characters long</p>
+                    </div>
+                    <button type="submit" class="btn primary-btn full-width">Create Account</button>
+                    <div class="form-error"></div>
+                    <div class="form-success"></div>
+                </form>
+                <p class="auth-footer">
+                    Already have an account? <a href="/login" class="auth-link">Login</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/static/js/auth.js"></script>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.querySelector('.form-error');
+            const successDiv = document.querySelector('.form-success');
+            const form = e.target;
+            
+            try {
+                const username = form.username.value;
+                const password = form.password.value;
+
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+
+                if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+                    throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
+                }
+
+                if (username.length < 3 || username.length > 30) {
+                    throw new Error('Username must be between 3 and 30 characters');
+                }
+
+                await createAccount(username, password);
+                
+                successDiv.textContent = 'Account created successfully! Redirecting...';
+                successDiv.style.display = 'block';
+                
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        document.getElementById('githubAuth').addEventListener('click', () => {
+            loginWithProvider('github');
+        });
+
+        document.getElementById('googleAuth').addEventListener('click', () => {
+            loginWithProvider('google');
+        });
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.classList.remove('light-mode', 'dark-mode');
+            document.body.classList.add(`${savedTheme}-mode`);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                const icon = themeToggle.querySelector('.theme-toggle-icon');
+                icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeTheme);
+
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.body.classList.contains('dark-mode');
+                const newTheme = isDark ? 'light' : 'dark';
+                
+                document.body.classList.toggle('light-mode');
+                document.body.classList.toggle('dark-mode');
+                
+                const icon = themeToggle.querySelector('.theme-toggle-icon');
+                icon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+                
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+    </script>
+</body>
+</html> 

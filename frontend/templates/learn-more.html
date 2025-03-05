@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn More | Lugers VS</title>
+    <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.1.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="background-shapes">
+        <div class="shape circle"></div>
+        <div class="shape triangle"></div>
+        <div class="shape square"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand">Lugers VS</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/vouches" class="nav-link">Vouches</a>
+            <a href="/login" class="nav-link">Profile</a>
+            <button id="themeToggle" class="theme-toggle">
+                <span class="theme-toggle-icon">🌑</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container learn-more-container">
+        <h1 class="section-title">How It Works</h1>
+        
+        <section class="info-section verification-process">
+            <h2>Vouch Verification Process</h2>
+            <div class="process-slideshow">
+                <div class="slides">
+                    <div class="slide active">
+                        <div class="step-content">
+                            <div class="step-number">1</div>
+                            <h3>Submission</h3>
+                            <div class="step-icon">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <p>Users submit vouches with required evidence including screenshots, transaction details, and contact information of both parties.</p>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="step-content">
+                            <div class="step-number">2</div>
+                            <h3>Verification</h3>
+                            <div class="step-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <p>Our admin team thoroughly reviews each submission, verifying authenticity through multiple checkpoints.</p>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="step-content">
+                            <div class="step-number">3</div>
+                            <h3>Confirmation</h3>
+                            <div class="step-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <p>Both parties are contacted to confirm the transaction details and approve the vouch publication.</p>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="step-content">
+                            <div class="step-number">4</div>
+                            <h3>Publication</h3>
+                            <div class="step-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p>Once verified, the vouch is published with a verification badge and becomes publicly visible.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-controls">
+                    <button class="prev-slide"><i class="fas fa-chevron-left"></i></button>
+                    <div class="slide-indicators">
+                        <span class="indicator active"></span>
+                        <span class="indicator"></span>
+                        <span class="indicator"></span>
+                        <span class="indicator"></span>
+                    </div>
+                    <button class="next-slide"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section security-section">
+            <h2>Security Measures</h2>
+            <div class="security-features">
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <h3>Advanced Authentication</h3>
+                    <div class="security-details">
+                        <ul>
+                            <li><i class="fas fa-check"></i>Multi-factor authentication</li>
+                            <li><i class="fas fa-check"></i>OAuth integration</li>
+                            <li><i class="fas fa-check"></i>Biometric support</li>
+                            <li><i class="fas fa-check"></i>Session management</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Data Protection</h3>
+                    <div class="security-details">
+                        <ul>
+                            <li><i class="fas fa-check"></i>End-to-end encryption</li>
+                            <li><i class="fas fa-check"></i>Regular security audits</li>
+                            <li><i class="fas fa-check"></i>Secure data storage</li>
+                            <li><i class="fas fa-check"></i>Backup systems</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3>Transparency</h3>
+                    <div class="security-details">
+                        <ul>
+                            <li><i class="fas fa-check"></i>Complete audit trail</li>
+                            <li><i class="fas fa-check"></i>Public verification status</li>
+                            <li><i class="fas fa-check"></i>Real-time monitoring</li>
+                            <li><i class="fas fa-check"></i>Activity logging</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section requirements-section">
+            <h2>File Requirements & Limitations</h2>
+            <div class="requirements-grid">
+                <div class="requirement-card">
+                    <div class="requirement-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <h3>Screenshots</h3>
+                    <ul class="requirement-list">
+                        <li><i class="fas fa-circle-check"></i>Maximum file size: 5MB per image</li>
+                        <li><i class="fas fa-circle-check"></i>Accepted formats: PNG, JPG, JPEG</li>
+                        <li><i class="fas fa-circle-check"></i>Minimum resolution: 800x600 pixels</li>
+                        <li><i class="fas fa-circle-check"></i>Maximum of 5 screenshots per vouch</li>
+                    </ul>
+                </div>
+                <div class="requirement-card">
+                    <div class="requirement-icon">
+                        <i class="fas fa-file-lines"></i>
+                    </div>
+                    <h3>Text Content</h3>
+                    <ul class="requirement-list">
+                        <li><i class="fas fa-circle-check"></i>Description: 50-500 characters</li>
+                        <li><i class="fas fa-circle-check"></i>Transaction details: Maximum 1000 characters</li>
+                        <li><i class="fas fa-circle-check"></i>Contact information required for both parties</li>
+                    </ul>
+                </div>
+                <div class="requirement-card">
+                    <div class="requirement-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Time Limits</h3>
+                    <ul class="requirement-list">
+                        <li><i class="fas fa-circle-check"></i>Submit within 30 days of transaction</li>
+                        <li><i class="fas fa-circle-check"></i>Verification process: 24-48 hours</li>
+                        <li><i class="fas fa-circle-check"></i>Edit window: 24 hours after publication</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section trust-score-section">
+            <h2>Trust Score System</h2>
+            <div class="trust-score-container">
+                <div class="trust-score-info">
+                    <h3>Evaluation Factors</h3>
+                    <ul class="factor-list">
+                        <li><i class="fas fa-user-clock"></i>Account age and activity</li>
+                        <li><i class="fas fa-certificate"></i>Number of verified vouches</li>
+                        <li><i class="fas fa-star"></i>Community feedback and ratings</li>
+                        <li><i class="fas fa-chart-line"></i>Transaction value and complexity</li>
+                        <li><i class="fas fa-comments"></i>Response time and communication</li>
+                    </ul>
+                </div>
+                <div class="trust-levels">
+                    <div class="trust-level">
+                        <span class="badge new"><i class="fas fa-seedling"></i> New User</span>
+                        <div class="level-progress">
+                            <div class="progress-bar" data-progress="33%"></div>
+                        </div>
+                        <p>0-2 verified vouches</p>
+                    </div>
+                    <div class="trust-level">
+                        <span class="badge trusted"><i class="fas fa-shield-alt"></i> Trusted</span>
+                        <div class="level-progress">
+                            <div class="progress-bar" data-progress="66%"></div>
+                        </div>
+                        <p>3-10 verified vouches</p>
+                    </div>
+                    <div class="trust-level">
+                        <span class="badge verified"><i class="fas fa-crown"></i> Verified</span>
+                        <div class="level-progress">
+                            <div class="progress-bar" data-progress="100%"></div>
+                        </div>
+                        <p>11+ verified vouches</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to Build Trust?</h2>
+                <p>Join our community of verified users and start building your reputation.</p>
+                <div class="cta-button-container">
+                    <a href="/signup" class="btn primary-btn">
+                        <i class="fas fa-rocket"></i>
+                        <span>Get Started Now</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html> 
