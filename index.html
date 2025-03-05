@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lugers VS</title>
+    <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.1.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode">
+    <div class="background-shapes">
+        <div class="shape circle"></div>
+        <div class="shape triangle"></div>
+        <div class="shape square"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand">Lugers VS</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/vouches" class="nav-link">Vouches</a>
+            <a href="/login" class="nav-link" id="profileBtn">Profile</a>
+            <button id="themeToggle" class="theme-toggle">
+                <span class="theme-toggle-icon">🌙</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1 class="hero-title">Trust Through Verification</h1>
+            <p class="hero-subtitle">A secure platform for verified vouches and recommendations</p>
+            <div class="cta-buttons">
+                <button class="btn primary-btn" onclick="window.location.href='/signup'">Get Started</button>
+                <button class="btn secondary-btn" onclick="window.location.href='/learn-more'">Learn More</button>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Verified Vouches</h3>
+                <p>All vouches are admin-verified for authenticity</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>User Profiles</h3>
+                <p>Create your profile and build trust</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Quick & Easy</h3>
+                <p>Simple process to submit and view vouches</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
