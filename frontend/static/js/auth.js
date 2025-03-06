@@ -19,7 +19,6 @@ function usernameToEmail(username) {
 
 async function createAccount(username, password) {
     try {
-        // Validate username
         if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
             throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
         }
@@ -79,9 +78,16 @@ async function logout() {
     }
 }
 
-// Export functions to window object
+async function checkAndRedirectIfLoggedIn() {
+    const user = await checkAuthStatus();
+    if (user) {
+        window.location.href = 'https://lugers-vs.netlify.app/templates/dashboard';
+    }
+}
+
 window.createAccount = createAccount;
 window.signIn = signIn;
 window.signInWithGoogle = signInWithGoogle;
 window.checkAuthStatus = checkAuthStatus;
 window.logout = logout;
+window.checkAndRedirectIfLoggedIn = checkAndRedirectIfLoggedIn;
