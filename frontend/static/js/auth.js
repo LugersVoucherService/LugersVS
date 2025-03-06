@@ -1,57 +1,87 @@
-// Initialize Appwrite client
-const client = new Appwrite.Client();
-client
-    .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject('67c62b88002f2e0fe5b3');
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 
-const account = new Appwrite.Account(client);
+const firebaseConfig = {
+    apiKey: "AIzaSyBDzyWfwB54Bo-ZrIykJCJHVQe6nQriqUU",
+    authDomain: "voucher-df8cc.firebaseapp.com",
+    projectId: "voucher-df8cc",
+    storageBucket: "voucher-df8cc.firebasestorage.app",
+    messagingSenderId: "1066514451346",
+    appId: "1:1066514451346:web:1bf82433cc460b6775cf4b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+function usernameToEmail(username) {
+    return `${username}@voucher-df8cc.firebaseapp.com`;
+}
 
 async function createAccount(username, password) {
     try {
-        const user = await account.create('unique()', username, password);
-        await account.createEmailSession(username, password);
-        window.location.href = 'http://localhost:5000/dashboard.html';
+        // Validate username
+        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+            throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
+        }
+        if (username.length < 3 || username.length > 30) {
+            throw new Error('Username must be between 3 and 30 characters');
+        }
+
+        const email = usernameToEmail(username);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        window.location.href = 'https://lugers-vs.netlify.app/templates/dashboard';
+        return userCredential.user;
     } catch (error) {
-        throw new Error(error.message);
+        console.error('Error creating account:', error);
+        throw error;
     }
 }
 
-async function loginWithProvider(provider) {
+async function signIn(username, password) {
     try {
-        await account.createOAuth2Session(provider, 'http://localhost:5000/dashboard.html');
+        const email = usernameToEmail(username);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = 'https://lugers-vs.netlify.app/templates/dashboard';
+        return userCredential.user;
     } catch (error) {
-        throw new Error(error.message);
+        console.error('Error signing in:', error);
+        throw error;
     }
 }
 
-async function loginWithGoogle() {
+async function signInWithGoogle() {
     try {
-        await account.createOAuth2Session('google', 'http://localhost:5000/dashboard.html');
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        window.location.href = 'https://lugers-vs.netlify.app/templates/dashboard';
+        return result.user;
     } catch (error) {
-        throw new Error(error.message);
+        console.error('Error signing in with Google:', error);
+        throw error;
     }
 }
 
 async function checkAuthStatus() {
-    try {
-        const user = await account.get();
-        return user;
-    } catch (error) {
-        return null;
-    }
+    return new Promise((resolve) => {
+        onAuthStateChanged(auth, (user) => {
+            resolve(user);
+        });
+    });
 }
 
 async function logout() {
     try {
-        await account.deleteSession('current');
-        window.location.href = 'http://localhost:5000/login.html';
+        await signOut(auth);
+        window.location.href = 'https://lugers-vs.netlify.app/templates/login';
     } catch (error) {
-        throw new Error(error.message);
+        console.error('Error logging out:', error);
+        throw error;
     }
 }
 
+// Export functions to window object
 window.createAccount = createAccount;
-window.loginWithProvider = loginWithProvider;
-window.loginWithGoogle = loginWithGoogle;
+window.signIn = signIn;
+window.signInWithGoogle = signInWithGoogle;
 window.checkAuthStatus = checkAuthStatus;
 window.logout = logout;
