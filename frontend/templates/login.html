@@ -6,7 +6,6 @@
     <title>Login | Lugers VS</title>
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -14,7 +13,7 @@
             overflow: hidden;
         }
         .container {
-            height: calc(100vh - 80px); /* Adjust based on navbar height */
+            height: calc(100vh - 80px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -57,35 +56,12 @@
         <div class="auth-container">
             <h2 class="auth-title">Welcome Back</h2>
             <div class="auth-options">
-                <button class="auth-btn github-btn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" class="auth-icon">
-                    Continue with GitHub
-                </button>
-                <button class="auth-btn google-btn">
+                <button class="auth-btn google-btn" id="googleAuth">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" class="auth-icon">
                     Continue with Google
                 </button>
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                <form class="auth-form" id="loginForm">
-                    <div class="form-group">
-                        <input type="text" 
-                               name="username" 
-                               placeholder="Username" 
-                               required 
-                               minlength="3" 
-                               maxlength="30" 
-                               pattern="^[a-zA-Z0-9_-]*$" 
-                               title="Username can only contain letters, numbers, underscores, and hyphens">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" name="password" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="btn primary-btn full-width">Login</button>
-                    <div class="form-error"></div>
-                    <div class="form-success"></div>
-                </form>
+                <div class="form-error"></div>
+                <div class="form-success"></div>
                 <p class="auth-footer">
                     Don't have an account? <a href="signup.html" class="auth-link">Sign up</a>
                 </p>
@@ -95,35 +71,9 @@
 
     <script type="module" src="../static/js/auth.js"></script>
     <script>
-        // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', async () => {
             await window.checkAndRedirectIfLoggedIn();
             initializeTheme();
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const errorDiv = document.querySelector('.form-error');
-            const successDiv = document.querySelector('.form-success');
-            const form = e.target;
-            
-            try {
-                const username = form.username.value;
-                const password = form.password.value;
-
-                errorDiv.style.display = 'none';
-                successDiv.style.display = 'none';
-
-                await window.signIn(username, password);
-                
-                successDiv.textContent = 'Login successful! Redirecting...';
-                successDiv.style.display = 'block';
-                
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
-            }
         });
 
         document.getElementById('googleAuth').addEventListener('click', async () => {
@@ -148,23 +98,18 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initializeTheme);
-
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
                 const isDark = document.body.classList.contains('dark-mode');
                 const newTheme = isDark ? 'light' : 'dark';
-                
                 document.body.classList.toggle('light-mode');
                 document.body.classList.toggle('dark-mode');
-                
                 const icon = themeToggle.querySelector('.theme-toggle-icon');
                 icon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
-                
                 localStorage.setItem('theme', newTheme);
             });
         }
-        </script>
+    </script>
 </body>
 </html> 

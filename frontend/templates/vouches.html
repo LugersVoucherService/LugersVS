@@ -7,7 +7,6 @@
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
     <link rel="stylesheet" href="../static/css/vouches.css">
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.1.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -41,28 +40,21 @@
 
         <div class="vouches-filters">
             <div class="search-bar">
-                <input type="text" placeholder="Search vouches...">
+                <input type="text" placeholder="Search by Roblox ID...">
                 <button class="search-btn">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
             <div class="filter-options">
-                <select class="filter-select" name="category">
-                    <option value="">All Categories</option>
-                    <option value="services">Services</option>
-                    <option value="products">Products</option>
-                    <option value="trades">Trades</option>
-                </select>
                 <select class="filter-select" name="sort">
                     <option value="recent">Most Recent</option>
-                    <option value="likes">Most Liked</option>
-                    <option value="comments">Most Discussed</option>
+                    <option value="oldest">Oldest First</option>
                 </select>
             </div>
         </div>
 
         <div class="vouches-grid">
-            <!-- Vouch cards will be dynamically inserted here -->
+
         </div>
 
         <div class="pagination">
@@ -84,124 +76,112 @@
         </div>
     </main>
 
-    <!-- Vouch Details Modal -->
     <div id="vouchModal" class="vouch-modal">
-        <div class="modal-content custom-scrollbar">
+        <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title-section">
-                    <h2 class="modal-title">Trade Verification</h2>
-                    <span class="verification-badge">
-                        <i class="fas fa-check-circle"></i> Verified Trade
-                    </span>
+                <h2 class="modal-title">Trade Verification</h2>
+                <div class="verification-badge">
+                    <i class="fas fa-shield-check"></i> Verified Trade
                 </div>
-                <button class="close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="close-modal">×</button>
             </div>
+
             <div class="modal-body">
                 <div class="trade-parties">
-                    <div class="trade-party client1">
+                    <div class="trade-party">
                         <div class="party-header">
-                            <h3>Client 1 (Trader)</h3>
-                            <div class="party-accounts">
-                                <div class="account roblox">
-                                    <img src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg" alt="Roblox Avatar" class="party-avatar">
-                                    <div class="account-info">
-                                        <span class="username" data-discord-id="123456789">RobloxUser1</span>
-                                        <div class="discord-tooltip">
-                                            <span class="discord-id">Discord: User#1234</span>
-                                            <button class="copy-id" data-id="123456789">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                            <h3>
+                                <i class="fas fa-user-circle"></i> 
+                                Trader Information
+                            </h3>
+                        </div>
+                        <div class="profile-info">
+                            <div class="roblox-info">
+                                <div class="info-label">
+                                    <i class="fas fa-gamepad"></i> Roblox Profile
+                                </div>
+                                <a href="#" class="platform-link" id="traderRobloxLink" target="_blank">
+                                    <span id="traderRobloxName">Loading...</span>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                            <div class="discord-info">
+                                <div class="info-label">
+                                    <i class="fab fa-discord"></i> Discord ID
+                                </div>
+                                <div class="discord-tag" id="traderDiscordId">
+                                    <span class="discord-username">Loading...</span>
+                                    <button class="copy-btn" title="Copy Discord ID">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="trade-offer">
-                            <h4><i class="fas fa-exchange-alt"></i> Offered Items</h4>
-                            <div class="offer-details">
-                                <p class="item-count">15x Premium Items</p>
-                                <p class="offer-description">Limited Edition Collection Items</p>
+                            <div class="trade-items">
+                                <div class="info-label">
+                                    <i class="fas fa-box-open"></i> Offered Items
+                                </div>
+                                <div class="items-container">
+                                    <p class="items-description" id="traderItems">Loading...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="trade-party client2">
+                    <div class="trade-party">
                         <div class="party-header">
-                            <h3>Client 2 (Recipient)</h3>
-                            <div class="party-accounts">
-                                <div class="account roblox">
-                                    <img src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg" alt="Roblox Avatar" class="party-avatar">
-                                    <div class="account-info">
-                                        <span class="username" data-discord-id="987654321">RobloxUser2</span>
-                                        <div class="discord-tooltip">
-                                            <span class="discord-id">Discord: User#5678</span>
-                                            <button class="copy-id" data-id="987654321">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                            <h3>
+                                <i class="fas fa-handshake"></i> 
+                                Partner Information
+                            </h3>
+                        </div>
+                        <div class="profile-info">
+                            <div class="roblox-info">
+                                <div class="info-label">
+                                    <i class="fas fa-gamepad"></i> Roblox Profile
+                                </div>
+                                <a href="#" class="platform-link" id="partnerRobloxLink" target="_blank">
+                                    <span id="partnerRobloxName">Loading...</span>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                            <div class="discord-info">
+                                <div class="info-label">
+                                    <i class="fab fa-discord"></i> Discord ID
+                                </div>
+                                <div class="discord-tag" id="partnerDiscordId">
+                                    <span class="discord-username">Loading...</span>
+                                    <button class="copy-btn" title="Copy Discord ID">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="trade-offer">
-                            <h4><i class="fas fa-exchange-alt"></i> Offered Items</h4>
-                            <div class="offer-details">
-                                <p class="item-count">500 Robux</p>
-                                <p class="offer-description">Direct transfer through gamepass</p>
+                            <div class="trade-items">
+                                <div class="info-label">
+                                    <i class="fas fa-box-open"></i> Offered Items
+                                </div>
+                                <div class="items-container">
+                                    <p class="items-description" id="partnerItems">Loading...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Trade Evidence Section -->
                 <div class="trade-evidence">
                     <h3><i class="fas fa-camera"></i> Trade Evidence</h3>
-                    <div class="evidence-sections">
-                        <div class="evidence-section">
-                            <h4>First Exchange</h4>
-                            <div class="screenshots-grid" id="firstExchangeScreenshots">
-                                <div class="screenshot-item">
-                                    <img src="../static/img/screenshot-1.jpg" alt="First Trade Screenshot">
-                                    <div class="screenshot-overlay">
-                                        <button class="expand-screenshot">
-                                            <i class="fas fa-expand"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="evidence-grid">
+                        <div class="screenshot-box">
+                            <a href="#" class="action-btn" target="_blank" id="screenshot1Link">
+                                <i class="fas fa-image"></i>
+                                Screenshot #1
+                            </a>
                         </div>
-                        
-                        <div class="evidence-section">
-                            <h4>Second Exchange</h4>
-                            <div class="screenshots-grid" id="secondExchangeScreenshots">
-                                <div class="screenshot-item">
-                                    <img src="../static/img/screenshot-2.jpg" alt="Second Trade Screenshot">
-                                    <div class="screenshot-overlay">
-                                        <button class="expand-screenshot">
-                                            <i class="fas fa-expand"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="trade-details">
-                    <h3><i class="fas fa-info-circle"></i> Additional Information</h3>
-                    <div class="details-content">
-                        <div class="detail-item">
-                            <span class="detail-label">Trade Date</span>
-                            <span class="detail-value" id="tradeDate">March 15, 2024</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Status</span>
-                            <span class="detail-value status-completed" id="tradeStatus">Completed</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Notes</span>
-                            <p class="detail-value" id="tradeNotes">Smooth transaction, both parties were professional and trade was completed quickly.</p>
+                        <div class="screenshot-box">
+                            <a href="#" class="action-btn" target="_blank" id="screenshot2Link">
+                                <i class="fas fa-image"></i>
+                                Screenshot #2
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -209,7 +189,121 @@
         </div>
     </div>
 
-    <script src="../static/js/app.js"></script>
-    <script src="../static/js/vouches.js"></script>
+    <!-- Create Vouch Modal -->
+    <div id="createVouchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Vouch</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="createVouchForm">
+                <!-- Your Information -->
+                <div class="form-section">
+                    <h3><i class="fas fa-user"></i> Your Information</h3>
+                    <div class="form-group">
+                        <label>Your Roblox Profile Link *</label>
+                        <div class="input-with-verify">
+                            <input type="url" id="yourRobloxLink" name="yourRobloxLink" required 
+                                   placeholder="https://www.roblox.com/users/YOUR_ID">
+                            <button type="button" id="verifyYourRoblox" class="verify-btn">
+                                <i class="fas fa-check-circle"></i> Verify
+                            </button>
+                        </div>
+                        <div id="yourProfilePreview" class="profile-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Discord ID *</label>
+                        <input type="text" name="yourDiscordId" required placeholder="username#0000">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Offered Items *</label>
+                        <textarea name="yourItems" required placeholder="List the items you offered in the trade..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-handshake"></i> Trade Partner Information</h3>
+                    <div class="form-group">
+                        <label>Partner's Roblox Profile Link *</label>
+                        <div class="input-with-verify">
+                            <input type="url" id="partnerRobloxLink" name="partnerRobloxLink" required 
+                                   placeholder="https://www.roblox.com/users/PARTNER_ID">
+                            <button type="button" id="verifyPartnerRoblox" class="verify-btn">
+                                <i class="fas fa-check-circle"></i> Verify
+                            </button>
+                        </div>
+                        <div id="partnerProfilePreview" class="profile-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Partner's Discord ID *</label>
+                        <input type="text" name="partnerDiscordId" required placeholder="username#0000">
+                    </div>
+                    <div class="form-group">
+                        <label>Partner's Offered Items *</label>
+                        <textarea name="partnerItems" required placeholder="List the items your trade partner offered..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-images"></i> Trade Evidence</h3>
+                    <div class="form-group">
+                        <label>Screenshots (2 required, each under 1MB) *</label>
+                        <div class="screenshot-upload">
+                            <div class="upload-slot">
+                                <input type="file" id="screenshot1" name="screenshot1" accept="image/*" required>
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-upload"></i>
+                                    <span>Upload Screenshot 1</span>
+                                </div>
+                                <div id="preview1" class="preview"></div>
+                            </div>
+                            <div class="upload-slot">
+                                <input type="file" id="screenshot2" name="screenshot2" accept="image/*" required>
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-upload"></i>
+                                    <span>Upload Screenshot 2</span>
+                                </div>
+                                <div id="preview2" class="preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-check-circle"></i>
+                    Create Vouch
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../static/js/app.js" type="module"></script>
+    <script src="../static/js/vouches.js" type="module"></script>
+
+    <style>
+        #createVouchBtn {
+            background: var(--dark-primary);
+            color: var(--dark-bg);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #createVouchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode #createVouchBtn {
+            background: var(--light-primary);
+            color: var(--light-bg);
+        }
+    </style>
 </body>
 </html> 
