@@ -7,7 +7,6 @@
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
     <style>
         body {
             height: 100vh;
@@ -88,10 +87,21 @@
                 </div>
                 <form class="auth-form" id="signupForm">
                     <div class="form-group">
-                        <input type="text" name="username" placeholder="Username" required minlength="3" maxlength="30" pattern="^[a-zA-Z0-9_-]*$" title="Username can only contain letters, numbers, underscores, and hyphens">
+                        <input type="text" 
+                               name="username" 
+                               placeholder="Username" 
+                               required 
+                               minlength="3" 
+                               maxlength="30" 
+                               pattern="^[a-zA-Z0-9_-]*$" 
+                               title="Username can only contain letters, numbers, underscores, and hyphens">
                     </div>
                     <div class="form-group">
-                        <input type="password" name="password" placeholder="Password" required minlength="8">
+                        <input type="password" 
+                               name="password" 
+                               placeholder="Password" 
+                               required 
+                               minlength="8">
                         <p class="password-requirements">Password must be at least 8 characters long</p>
                     </div>
                     <button type="submit" class="btn primary-btn full-width">Create Account</button>
@@ -106,7 +116,7 @@
     </main>
 
     <!-- Scripts -->
-    <script src="../static/js/auth.js"></script>
+    <script type="module" src="../static/js/auth.js"></script>
 
     <script>
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -123,15 +133,7 @@
                 errorDiv.style.display = 'none';
                 successDiv.style.display = 'none';
 
-                if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-                    throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
-                }
-
-                if (username.length < 3 || username.length > 30) {
-                    throw new Error('Username must be between 3 and 30 characters');
-                }
-
-                await createAccount(username, password);
+                await window.createAccount(username, password);
                 
                 successDiv.textContent = 'Account created successfully! Redirecting...';
                 successDiv.style.display = 'block';
@@ -142,12 +144,14 @@
             }
         });
 
-        document.getElementById('githubAuth').addEventListener('click', () => {
-            loginWithProvider('github');
-        });
-
-        document.getElementById('googleAuth').addEventListener('click', () => {
-            loginWithProvider('google');
+        document.getElementById('googleAuth').addEventListener('click', async () => {
+            try {
+                await window.signInWithGoogle();
+            } catch (error) {
+                const errorDiv = document.querySelector('.form-error');
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
         });
 
         function initializeTheme() {
