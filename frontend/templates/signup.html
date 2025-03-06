@@ -119,6 +119,11 @@
     <script type="module" src="../static/js/auth.js"></script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.checkAndRedirectIfLoggedIn();
+            initializeTheme();
+        });
+
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -165,8 +170,6 @@
                 icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', initializeTheme);
 
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {

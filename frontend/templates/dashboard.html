@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Lugers VS</title>
+    <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="background-shapes">
+        <div class="shape circle"></div>
+        <div class="shape triangle"></div>
+        <div class="shape square"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand">Lugers VS</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="vouches.html" class="nav-link">Vouches</a>
+            <a href="#" class="nav-link active">Dashboard</a>
+            <button id="logoutBtn" class="nav-link logout-btn">Logout</button>
+            <button id="themeToggle" class="theme-toggle">
+                <span class="theme-toggle-icon">🌑</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <div class="welcome-section">
+            <h1>Welcome, <span id="username">User</span>!</h1>
+            <p>Manage your account and view your activity</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-icon">👤</span>
+                    <h3 class="card-title">Account Status</h3>
+                </div>
+                <div class="stat-value" id="accountStatus">Verifying...</div>
+                <p class="stat-label">Current account verification level</p>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-icon">📅</span>
+                    <h3 class="card-title">Member Since</h3>
+                </div>
+                <div class="stat-value" id="memberSince">Loading...</div>
+                <p class="stat-label">Account creation date</p>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-icon">🔒</span>
+                    <h3 class="card-title">Security Status</h3>
+                </div>
+                <div class="stat-value" id="securityStatus">Checking...</div>
+                <p class="stat-label">Account security level</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="../static/js/auth.js"></script>
+    <script>
+        let authUser = null;
+
+        async function initializeDashboard() {
+            try {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.style.display = 'flex';
+
+                authUser = await window.checkAuthStatus();
+                
+                if (!authUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                updateDashboard(authUser);
+
+                loadingOverlay.style.display = 'none';
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateDashboard(user) {
+            const username = user.email.split('@')[0];
+            document.getElementById('username').textContent = username;
+
+            const memberSince = new Date(user.metadata.creationTime).toLocaleDateString();
+            document.getElementById('memberSince').textContent = memberSince;
+
+            const accountStatus = user.emailVerified ? 'Verified' : 'Unverified';
+            document.getElementById('accountStatus').textContent = accountStatus;
+            
+            const securityStatus = determineSecurityStatus(user);
+            document.getElementById('securityStatus').textContent = securityStatus;
+        }
+
+        function determineSecurityStatus(user) {
+            if (user.emailVerified && user.providerData.length > 1) {
+                return '🟢 Strong';
+            } else if (user.emailVerified) {
+                return '🟡 Good';
+            }
+            return '🔴 Basic';
+        }
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await window.logout();
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        });
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.classList.remove('light-mode', 'dark-mode');
+            document.body.classList.add(`${savedTheme}-mode`);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                const icon = themeToggle.querySelector('.theme-toggle-icon');
+                icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDashboard();
+            initializeTheme();
+        });
+
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.body.classList.contains('dark-mode');
+                const newTheme = isDark ? 'light' : 'dark';
+                document.body.classList.toggle('light-mode');
+                document.body.classList.toggle('dark-mode');
+                const icon = themeToggle.querySelector('.theme-toggle-icon');
+                icon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+    </script>
+</body>
+</html>
