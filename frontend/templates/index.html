@@ -3,27 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lugers VS</title>
+    <title>Lugers VS - Trusted Vouch System</title>
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/appwrite@16.1.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="dark-mode">
+    <div class="loading-animation">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="custom-cursor"></div>
+    <div class="scroll-progress"></div>
+
     <div class="background-shapes">
         <div class="shape circle"></div>
         <div class="shape triangle"></div>
         <div class="shape square"></div>
+        <div class="shape hexagon"></div>
+        <div class="shape diamond"></div>
     </div>
 
     <nav class="navbar">
-        <div class="nav-brand">Lugers VS</div>
+        <a href="index.html" class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            Lugers VS
+        </a>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="nav-links">
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="vouches.html" class="nav-link">Vouches</a>
-            <a href="login.html" class="nav-link" id="profileBtn">Profile</a>
+            <a href="index.html" class="nav-link active">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="vouches.html" class="nav-link">
+                <i class="fas fa-check-circle"></i>
+                <span>Vouches</span>
+            </a>
+            <a href="learn-more.html" class="nav-link">
+                <i class="fas fa-info-circle"></i>
+                <span>Learn More</span>
+            </a>
+            <a href="login.html" class="nav-link">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
             <button id="themeToggle" class="theme-toggle">
-                <span class="theme-toggle-icon">🌙</span>
+                <i class="fas fa-moon"></i>
             </button>
         </div>
     </nav>
@@ -31,32 +60,175 @@
     <main class="container">
         <section class="hero">
             <h1 class="hero-title">Trust Through Verification</h1>
-            <p class="hero-subtitle">A secure platform for verified vouches and recommendations</p>
+            <p class="hero-subtitle">The most secure and reliable vouch system for your transactions</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-content">
+                        <div class="stat-animation">
+                            <i class="fas fa-shield-alt"></i>
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-content">
+                        <div class="stat-animation">
+                            <i class="fas fa-bolt"></i>
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-content">
+                        <div class="stat-animation">
+                            <i class="fas fa-moon"></i>
+                            <i class="fas fa-sun"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="cta-buttons">
-                <button class="btn primary-btn" onclick="window.location.href='signup.html'">Get Started</button>
-                <button class="btn secondary-btn" onclick="window.location.href='learn-more.html'">Learn More</button>
+                <button class="btn primary-btn" onclick="window.location.href='signup.html'">
+                    <i class="fas fa-rocket"></i>
+                    <span>Get Started</span>
+                </button>
+                <button class="btn secondary-btn" onclick="window.location.href='learn-more.html'">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Learn More</span>
+                </button>
             </div>
         </section>
 
         <section class="features">
             <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3>Verified Vouches</h3>
-                <p>All vouches are admin-verified for authenticity</p>
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Guaranteed Security</h3>
+                <p>Your transactions are fully protected with top-tier encryption</p>
+                <div class="feature-hover">
+                    <a href="learn-more.html#security" class="learn-more-link">
+                        Learn More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">👥</div>
-                <h3>User Profiles</h3>
-                <p>Create your profile and build trust</p>
+                <div class="feature-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3>Verified Vendors</h3>
+                <p>We ensure all vendors go through a strict verification process</p>
+                <div class="feature-hover">
+                    <a href="learn-more.html#vendors" class="learn-more-link">
+                        Learn More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>Quick & Easy</h3>
-                <p>Simple process to submit and view vouches</p>
+                <div class="feature-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3>Transparency & Trust</h3>
+                <p>Complete visibility and accountability in every transaction</p>
+                <div class="feature-hover">
+                    <a href="learn-more.html#transparency" class="learn-more-link">
+                        Learn More
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </section>
     </main>
 
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="index.html" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Home</span>
+                </a>
+                <a href="vouches.html" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Vouches</span>
+                </a>
+                <a href="learn-more.html" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Learn More</span>
+                </a>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>FAQ</span>
+                </a>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Contact</span>
+                </a>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Terms</span>
+                </a>
+            </div>
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Discord">
+                        <div class="social-icon-wrapper">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Telegram">
+                        <div class="social-icon-wrapper">
+                            <i class="fab fa-telegram"></i>
+                        </div>
+                    </a>
+                    <a href="#" class="social-link" aria-label="Twitter">
+                        <div class="social-icon-wrapper">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Lugers VS. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script src="../static/js/app.js"></script>
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.querySelector('.custom-cursor');
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a, button').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                document.querySelector('.custom-cursor').classList.add('hover');
+            });
+            element.addEventListener('mouseleave', () => {
+                document.querySelector('.custom-cursor').classList.remove('hover');
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const scrollProgress = document.querySelector('.scroll-progress');
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            scrollProgress.style.transform = `scaleX(${scrollPercent / 100})`;
+        });
+
+        window.addEventListener('load', () => {
+            document.querySelector('.loading-animation').style.opacity = '0';
+            setTimeout(() => {
+                document.querySelector('.loading-animation').style.display = 'none';
+            }, 500);
+        });
+    </script>
 </body>
 </html>
