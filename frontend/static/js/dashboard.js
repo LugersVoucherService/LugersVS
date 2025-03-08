@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { doc, getDoc, updateDoc, setDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 class DashboardManager {
     constructor() {
@@ -8,6 +8,7 @@ class DashboardManager {
         this.userDoc = null;
         this.recentTrades = JSON.parse(sessionStorage.getItem('recentTrades')) || [];
         this.robloxCache = new Map();
+        this.lastCredentialUpdate = null;
         this.initialize();
     }
 
@@ -21,6 +22,7 @@ class DashboardManager {
                     await this.loadUserData();
                     await this.updateDashboard();
                     await this.loadTradeHistory();
+                    this.updateUI();
                 } else {
                     window.location.href = 'login.html';
                 }
@@ -46,6 +48,7 @@ class DashboardManager {
 
             if (!querySnapshot.empty) {
                 this.userDoc = querySnapshot.docs[0].data();
+                this.lastCredentialUpdate = this.userDoc.lastCredentialUpdate?.toDate() || null;
                 if (this.userDoc.robloxid) {
                     const robloxData = await this.fetchRobloxData(this.userDoc.robloxid);
                     if (robloxData) {
@@ -376,19 +379,14 @@ class DashboardManager {
             themeToggle.addEventListener('click', () => this.handleThemeToggle());
         }
 
-        const editCredentials = document.getElementById('editCredentials');
-        if (editCredentials) {
-            editCredentials.addEventListener('click', () => this.showEditCredentialsModal());
+        const editBtn = document.getElementById('editCredentials');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => this.showEditCredentialsModal());
         }
 
-        const credentialsForm = document.getElementById('credentialsForm');
-        if (credentialsForm) {
-            credentialsForm.addEventListener('submit', (e) => this.handleCredentialsUpdate(e));
-        }
-
-        const closeModal = document.querySelector('.close-modal');
-        if (closeModal) {
-            closeModal.addEventListener('click', () => this.hideEditCredentialsModal());
+        const closeBtn = document.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hideEditCredentialsModal());
         }
 
         const historyFilter = document.getElementById('historyFilter');
@@ -398,18 +396,23 @@ class DashboardManager {
     }
 
     showEditCredentialsModal() {
+        if (!this.canUpdateCredentials()) {
+            const daysLeft = this.getTimeUntilNextUpdate();
+            this.showError(`You can update your credentials once every 7 days. Please wait ${daysLeft} more days.`);
+            return;
+        }
+
         const modal = document.getElementById('editCredentialsModal');
         if (modal) {
-            modal.style.display = 'block';
-            setTimeout(() => modal.classList.add('show'), 10);
-
+            modal.classList.add('show');
+            
+            // Pre-fill the form with current values
+            const discordInput = document.getElementById('editDiscordId');
+            const robloxInput = document.getElementById('editRobloxId');
+            
             if (this.userDoc) {
-                document.getElementById('editRobloxId').value = this.userDoc.robloxid || '';
-                document.getElementById('editDiscordId').value = this.userDoc.discordId || '';
-                
-                if (this.userDoc.robloxUsername) {
-                    document.getElementById('editRobloxId').placeholder = `Current: @${this.userDoc.robloxUsername}`;
-                }
+                discordInput.value = this.userDoc.discordId || '';
+                robloxInput.value = this.userDoc.robloxid || '';
             }
         }
     }
@@ -418,67 +421,58 @@ class DashboardManager {
         const modal = document.getElementById('editCredentialsModal');
         if (modal) {
             modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
         }
     }
 
     async handleCredentialsUpdate(e) {
         e.preventDefault();
+
+        if (!this.canUpdateCredentials()) {
+            const daysLeft = this.getTimeUntilNextUpdate();
+            this.showError(`You can update your credentials once every 7 days. Please wait ${daysLeft} more days.`);
+            return;
+        }
+
+        const discordId = document.getElementById('editDiscordId').value.trim();
+        const robloxId = document.getElementById('editRobloxId').value.trim();
+
+        if (!discordId || !robloxId) {
+            this.showError('Please fill in all fields');
+            return;
+        }
+
         try {
-            const robloxId = document.getElementById('editRobloxId').value.trim();
-            const discordId = document.getElementById('editDiscordId').value.trim();
+            const userRef = doc(db, 'users', this.currentUser.uid);
+            await updateDoc(userRef, {
+                discordId: discordId,
+                robloxId: robloxId,
+                lastCredentialUpdate: serverTimestamp()
+            });
 
-            if (!robloxId && !discordId) {
-                this.showError('Please enter at least one credential to update');
-                return;
-            }
+            this.lastCredentialUpdate = new Date();
+            this.hideEditCredentialsModal();
+            
+            // Show success message
+            const successToast = document.createElement('div');
+            successToast.className = 'success-toast';
+            successToast.innerHTML = `
+                <div class="success-content">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Credentials updated successfully!</span>
+                </div>
+                <div class="toast-progress"></div>
+            `;
+            document.body.appendChild(successToast);
+            setTimeout(() => successToast.classList.add('show'), 100);
+            setTimeout(() => {
+                successToast.classList.remove('show');
+                setTimeout(() => successToast.remove(), 300);
+            }, 3000);
 
-            if (robloxId) {
-                const robloxData = await this.fetchRobloxData(robloxId);
-                if (!robloxData) {
-                    this.showError('Invalid Roblox ID. Please check and try again.');
-                    return;
-                }
-            }
-
-            const verifiedRef = collection(db, 'Verified');
-            const q = query(verifiedRef, where('email', '==', this.currentUser.email));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                const userDoc = querySnapshot.docs[0];
-                const updateData = {};
-                
-                if (robloxId) updateData.robloxid = robloxId;
-                if (discordId) updateData.discordId = discordId;
-
-                await updateDoc(doc(db, 'Verified', userDoc.id), updateData);
-                
-                const cachedCredentials = JSON.parse(localStorage.getItem('userCredentials') || '{}');
-                if (robloxId) {
-                    const robloxData = await this.fetchRobloxData(robloxId);
-                    if (robloxData) {
-                        cachedCredentials.robloxId = robloxId;
-                        cachedCredentials.robloxUsername = robloxData.name;
-                        cachedCredentials.robloxDisplayName = robloxData.displayName;
-                        cachedCredentials.robloxAvatar = robloxData.thumbnail;
-                    }
-                }
-                if (discordId) {
-                    cachedCredentials.discordId = discordId;
-                }
-                localStorage.setItem('userCredentials', JSON.stringify(cachedCredentials));
-                
-                await this.loadUserData();
-                await this.updateDashboard();
-                
-                this.hideEditCredentialsModal();
-                this.showSuccess('Credentials updated successfully!');
-            } else {
-                this.showError('Account not found. Please contact an administrator.');
-            }
+            // Reload user data to reflect changes
+            await this.loadUserData();
+            this.updateUI();
         } catch (error) {
-            console.error('Error updating credentials:', error);
             this.showError('Failed to update credentials. Please try again.');
         }
     }
@@ -603,6 +597,26 @@ class DashboardManager {
                 setTimeout(() => successToast.remove(), 300);
             });
         }
+    }
+
+    canUpdateCredentials() {
+        if (!this.lastCredentialUpdate) return true;
+        
+        const now = new Date();
+        const daysSinceLastUpdate = (now - this.lastCredentialUpdate) / (1000 * 60 * 60 * 24);
+        return daysSinceLastUpdate >= 7;
+    }
+
+    getTimeUntilNextUpdate() {
+        if (!this.lastCredentialUpdate) return null;
+        
+        const now = new Date();
+        const nextUpdateDate = new Date(this.lastCredentialUpdate);
+        nextUpdateDate.setDate(nextUpdateDate.getDate() + 7);
+        
+        const timeLeft = nextUpdateDate - now;
+        const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+        return daysLeft;
     }
 }
 

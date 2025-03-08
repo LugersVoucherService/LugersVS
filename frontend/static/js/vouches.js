@@ -322,17 +322,17 @@ class VouchManager {
                                 <span class="trade-date">
                                     <i class="far fa-clock"></i>
                                     <span class="date-text">${date}</span>
-                                </span>
-                            </div>
+                            </span>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
             
             <button class="trade-details-btn">
-                <i class="fas fa-eye"></i>
-                View Trade Details
-            </button>
+                    <i class="fas fa-eye"></i>
+                    View Trade Details
+                </button>
         `;
 
         return card;
@@ -606,38 +606,38 @@ class VouchManager {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Vouch...';
 
-            const formData = new FormData(form);
+                const formData = new FormData(form);
             const screenshots = this.screenshots || [];
 
             if (screenshots.length !== 2) {
                 throw new Error('Please upload exactly 2 screenshots');
-            }
+                }
 
-            const vouchData = {
-                yourProfile: {
-                    robloxLink: formData.get('yourRobloxLink'),
-                    discordId: formData.get('yourDiscordId'),
-                    offeredItems: formData.get('yourItems')
-                },
-                partnerProfile: {
-                    robloxLink: formData.get('partnerRobloxLink'),
-                    discordId: formData.get('partnerDiscordId'),
-                    offeredItems: formData.get('partnerItems')
-                },
+                const vouchData = {
+                    yourProfile: {
+                        robloxLink: formData.get('yourRobloxLink'),
+                        discordId: formData.get('yourDiscordId'),
+                        offeredItems: formData.get('yourItems')
+                    },
+                    partnerProfile: {
+                        robloxLink: formData.get('partnerRobloxLink'),
+                        discordId: formData.get('partnerDiscordId'),
+                        offeredItems: formData.get('partnerItems')
+                    },
                 screenshots: screenshots
-            };
+                };
 
             // Create the vouch
             const vouchId = await this.createVouch(vouchData);
-            
-            // Show success message
+                
+                // Show success message
             this.showError('Vouch created successfully!');
             
             // Close modal and refresh vouches
             this.hideCreateVouchModal(document.getElementById('createVouchModal'));
-            this.loadVouches();
+                        this.loadVouches();
 
-        } catch (error) {
+            } catch (error) {
             console.error('Submission error:', error);
             this.showError(error.message || 'Failed to create vouch. Please try again.');
         } finally {
@@ -960,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const vouchId = card.dataset.vouchId;
             if (vouchId) {
-                vouchModal.show(vouchId);
+            vouchModal.show(vouchId);
             }
         }
     });
