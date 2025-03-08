@@ -22,15 +22,13 @@ class DashboardManager {
                     await this.loadUserData();
                     await this.updateDashboard();
                     await this.loadTradeHistory();
-                    this.updateUI();
+                    this.initializeTheme();
+                    this.initializeEventListeners();
                 } else {
                     window.location.href = 'login.html';
                 }
                 this.hideLoadingState();
             });
-
-            this.initializeTheme();
-            this.initializeEventListeners();
         } catch (error) {
             console.error('Failed to initialize dashboard:', error);
             this.hideLoadingState();
@@ -485,7 +483,9 @@ class DashboardManager {
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             const icon = themeToggle.querySelector('.theme-toggle-icon');
-            icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+            if (icon) {
+                icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+            }
         }
     }
 
@@ -617,6 +617,13 @@ class DashboardManager {
         const timeLeft = nextUpdateDate - now;
         const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
         return daysLeft;
+    }
+
+    async updateUI() {
+        // Update the dashboard UI with current data
+        await this.updateDashboard();
+        const securityStatus = this.determineSecurityStatus();
+        this.updateSecurityTips(securityStatus);
     }
 }
 
