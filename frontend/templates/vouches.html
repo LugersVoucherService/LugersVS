@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
     <link rel="stylesheet" href="../static/css/vouches.css">
+    <link rel="stylesheet" href="../static/css/trade-cards.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -18,7 +19,7 @@
     </div>
 
     <nav class="navbar">
-        <div class="nav-brand">Lugers VS</div>
+        <div class="nav-brand">Lugers Vouching Services</div>
         <div class="nav-links">
             <a href="index.html" class="nav-link">Home</a>
             <a href="vouches.html" class="nav-link active">Vouches</a>
@@ -54,22 +55,21 @@
         </div>
 
         <div class="vouches-grid">
-
+            <div class="loading-indicator">
+                <i class="fas fa-spinner fa-spin"></i>
+                Loading vouches...
+            </div>
         </div>
 
         <div class="pagination">
-            <button class="pagination-btn">
+            <button class="pagination-btn" disabled>
                 <i class="fas fa-chevron-left"></i>
                 Previous
             </button>
             <div class="page-numbers">
                 <span class="page-number active">1</span>
-                <span class="page-number">2</span>
-                <span class="page-number">3</span>
-                <span class="page-dots">...</span>
-                <span class="page-number">10</span>
             </div>
-            <button class="pagination-btn">
+            <button class="pagination-btn" disabled>
                 Next
                 <i class="fas fa-chevron-right"></i>
             </button>
@@ -77,119 +77,146 @@
     </main>
 
     <div id="vouchModal" class="vouch-modal">
-        <div class="modal-content">
+        <div class="trade-modal">
             <div class="modal-header">
-                <h2 class="modal-title">Trade Verification</h2>
-                <div class="verification-badge">
-                    <i class="fas fa-shield-check"></i> Verified Trade
-                </div>
-                <button class="close-modal">×</button>
+                <h2 class="modal-title">
+                    <i class="fas fa-handshake"></i>
+                    Trade Verification
+                </h2>
+                <button class="close-modal">&times;</button>
             </div>
 
             <div class="modal-body">
                 <div class="trade-parties">
-                    <div class="trade-party">
-                        <div class="party-header">
-                            <h3>
-                                <i class="fas fa-user-circle"></i> 
-                                Trader Information
-                            </h3>
+                    
+                    <div class="trade-party content-frame">
+                        <div class="content-header">
+                            <i class="fas fa-user"></i>
+                            <h3>Trader Information</h3>
                         </div>
-                        <div class="profile-info">
-                            <div class="roblox-info">
-                                <div class="info-label">
-                                    <i class="fas fa-gamepad"></i> Roblox Profile
+                        
+                        <div class="content-body">
+                            <div class="trade-profile-section">
+                                <div id="traderProfileImage" class="trade-profile-image">
+                                    <img src="" alt="Trader Profile">
                                 </div>
-                                <a href="#" class="platform-link" id="traderRobloxLink" target="_blank">
-                                    <span id="traderRobloxName">Loading...</span>
+                                <div class="trade-user-info">
+                                    <div class="trade-user-basic-info">
+                                        <span id="traderDisplayName" class="trade-displayname"></span>
+                                        <span id="traderUsername" class="trade-username"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-label">
+                                    <i class="fas fa-gamepad"></i>
+                                    Roblox Profile
+                                </div>
+                                <a id="traderRobloxLink" href="#" class="info-content link" target="_blank">
                                     <i class="fas fa-external-link-alt"></i>
+                                    View Profile
                                 </a>
                             </div>
-                            <div class="discord-info">
+
+                            <div class="info-section">
                                 <div class="info-label">
-                                    <i class="fab fa-discord"></i> Discord ID
+                                    <i class="fab fa-discord"></i>
+                                    Discord ID
                                 </div>
-                                <div class="discord-tag" id="traderDiscordId">
-                                    <span class="discord-username">Loading...</span>
-                                    <button class="copy-btn" title="Copy Discord ID">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
+                                <div class="info-content" id="traderDiscordId"></div>
+                                <button class="copy-btn" data-clipboard-target="#traderDiscordId">
+                                    <i class="fas fa-copy"></i>
+                                    Copy
+                                </button>
                             </div>
-                            <div class="trade-items">
+
+                            <div class="info-section">
                                 <div class="info-label">
-                                    <i class="fas fa-box-open"></i> Offered Items
+                                    <i class="fas fa-box-open"></i>
+                                    Offered Items
                                 </div>
-                                <div class="items-container">
-                                    <p class="items-description" id="traderItems">Loading...</p>
-                                </div>
+                                <div class="info-content" id="traderItems"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="trade-party">
-                        <div class="party-header">
-                            <h3>
-                                <i class="fas fa-handshake"></i> 
-                                Partner Information
-                            </h3>
+                    
+                    <div class="trade-party content-frame">
+                        <div class="content-header">
+                            <i class="fas fa-user-friends"></i>
+                            <h3>Partner Information</h3>
                         </div>
-                        <div class="profile-info">
-                            <div class="roblox-info">
-                                <div class="info-label">
-                                    <i class="fas fa-gamepad"></i> Roblox Profile
+                        
+                        <div class="content-body">
+                            <div class="trade-profile-section">
+                                <div id="partnerProfileImage" class="trade-profile-image">
+                                    <img src="" alt="Partner Profile">
                                 </div>
-                                <a href="#" class="platform-link" id="partnerRobloxLink" target="_blank">
-                                    <span id="partnerRobloxName">Loading...</span>
+                                <div class="trade-user-info">
+                                    <div class="trade-user-basic-info">
+                                        <span id="partnerDisplayName" class="trade-displayname"></span>
+                                        <span id="partnerUsername" class="trade-username"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-label">
+                                    <i class="fas fa-gamepad"></i>
+                                    Roblox Profile
+                                </div>
+                                <a id="partnerRobloxLink" href="#" class="info-content link" target="_blank">
                                     <i class="fas fa-external-link-alt"></i>
+                                    View Profile
                                 </a>
                             </div>
-                            <div class="discord-info">
+
+                            <div class="info-section">
                                 <div class="info-label">
-                                    <i class="fab fa-discord"></i> Discord ID
+                                    <i class="fab fa-discord"></i>
+                                    Discord ID
                                 </div>
-                                <div class="discord-tag" id="partnerDiscordId">
-                                    <span class="discord-username">Loading...</span>
-                                    <button class="copy-btn" title="Copy Discord ID">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
+                                <div class="info-content" id="partnerDiscordId"></div>
+                                <button class="copy-btn" data-clipboard-target="#partnerDiscordId">
+                                    <i class="fas fa-copy"></i>
+                                    Copy
+                                </button>
                             </div>
-                            <div class="trade-items">
+
+                            <div class="info-section">
                                 <div class="info-label">
-                                    <i class="fas fa-box-open"></i> Offered Items
+                                    <i class="fas fa-box-open"></i>
+                                    Offered Items
                                 </div>
-                                <div class="items-container">
-                                    <p class="items-description" id="partnerItems">Loading...</p>
-                                </div>
+                                <div class="info-content" id="partnerItems"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Trade Evidence Section -->
+                
                 <div class="trade-evidence">
-                    <h3><i class="fas fa-camera"></i> Trade Evidence</h3>
+                    <h3>
+                        <i class="fas fa-camera"></i>
+                        Trade Evidence
+                    </h3>
                     <div class="evidence-grid">
-                        <div class="screenshot-box">
-                            <a href="#" class="action-btn" target="_blank" id="screenshot1Link">
-                                <i class="fas fa-image"></i>
-                                Screenshot #1
-                            </a>
-                        </div>
-                        <div class="screenshot-box">
-                            <a href="#" class="action-btn" target="_blank" id="screenshot2Link">
-                                <i class="fas fa-image"></i>
-                                Screenshot #2
-                            </a>
-                        </div>
+                        <a href="#" class="screenshot-link" id="screenshot1Link" target="_blank">
+                            <i class="fas fa-image"></i>
+                            View Screenshot #1
+                        </a>
+                        <a href="#" class="screenshot-link" id="screenshot2Link" target="_blank">
+                            <i class="fas fa-image"></i>
+                            View Screenshot #2
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Create Vouch Modal -->
+    
     <div id="createVouchModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -197,7 +224,7 @@
                 <button class="close-modal">&times;</button>
             </div>
             <form id="createVouchForm">
-                <!-- Your Information -->
+                
                 <div class="form-section">
                     <h3><i class="fas fa-user"></i> Your Information</h3>
                     <div class="form-group">
@@ -269,10 +296,12 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-check-circle"></i>
-                    Create Vouch
-                </button>
+                <div class="submit-btn-container">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-check-circle"></i>
+                        Create Vouch
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -305,5 +334,39 @@
             color: var(--light-bg);
         }
     </style>
+
+    <template id="vouchCardTemplate">
+        <div class="trade-card">
+            <div class="trade-verification-status verified">
+                <i class="fas fa-shield-check"></i>
+                <span>Verified</span>
+            </div>
+            
+            <div class="trade-card-header">
+                <div class="trade-card-meta">
+                    <div class="trade-profile-section">
+                        <div class="trade-profile-image">
+                            <img src="" alt="Profile" class="avatar-image">
+                        </div>
+                        <div class="trade-user-info">
+                            <div class="trade-user-basic-info">
+                                <span class="trade-displayname"></span>
+                                <span class="trade-username">@username</span>
+                                <span class="trade-date">
+                                    <i class="far fa-clock"></i>
+                                    <span class="date-text"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="trade-details-btn">
+                <i class="fas fa-eye"></i>
+                View Trade Details
+            </button>
+        </div>
+    </template>
 </body>
-</html> 
+</html>
