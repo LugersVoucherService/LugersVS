@@ -116,7 +116,7 @@ class DashboardManager {
             const roleStatusEl = document.getElementById('roleStatus');
 
             if (usernameEl) {
-                usernameEl.textContent = this.currentUser.email.split('@')[0];
+                usernameEl.textContent = this.userDoc.robloxDisplayName || this.currentUser.email.split('@')[0];
             }
             if (userRoleEl) {
                 userRoleEl.textContent = this.capitalizeFirstLetter(this.userDoc.role);
