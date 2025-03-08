@@ -4,9 +4,7 @@ shapes.forEach(shape => {
     shape.style.animationDelay = `${randomDelay}s`;
 });
 
-// Custom Scrollbar Implementation
 document.addEventListener('DOMContentLoaded', () => {
-    // Create scrollbar elements
     const scrollbar = document.createElement('div');
     scrollbar.className = 'custom-scrollbar';
     const thumb = document.createElement('div');
@@ -14,36 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollbar.appendChild(thumb);
     document.body.appendChild(scrollbar);
 
-    // Calculate and update thumb size and position
     function updateScrollbar() {
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
         const scrolled = window.scrollY;
         
-        // Calculate thumb height
         const thumbHeight = Math.max(
             (windowHeight / documentHeight) * windowHeight,
-            40 // Minimum thumb height in pixels
+            40
         );
         
-        // Calculate thumb position
         const thumbPosition = (scrolled / (documentHeight - windowHeight)) * (windowHeight - thumbHeight);
         
-        // Update thumb style
         thumb.style.height = `${thumbHeight}px`;
         thumb.style.transform = `translateY(${thumbPosition}px)`;
     }
 
-    // Initial update
     updateScrollbar();
 
-    // Update on scroll
     window.addEventListener('scroll', updateScrollbar);
-    
-    // Update on window resize
     window.addEventListener('resize', updateScrollbar);
 
-    // Drag functionality
     let isDragging = false;
     let startY;
     let scrollStart;
@@ -52,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isDragging = true;
         startY = e.clientY;
         scrollStart = window.scrollY;
-        document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+        document.body.style.userSelect = 'none';
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -96,11 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial visibility
     showScrollbar();
 });
 
-// Vouch Details Modal
 const modal = document.getElementById('vouchModal');
 const closeModal = document.querySelector('.close-modal');
 
@@ -116,47 +103,6 @@ window.onclick = function(event) {
     }
 }
 
-function showVouchDetails(card) {
-    const vouchId = card.getAttribute('data-vouch-id');
-    // Here you would typically fetch the vouch details from your backend
-    const mockData = {
-        transactionDetails: "Web Development Service - Portfolio Website",
-        date: "2024-03-15",
-        voucher: {
-            name: "John Doe",
-            contact: "john@example.com",
-            role: "Service Provider"
-        },
-        recipient: {
-            name: "Jane Smith",
-            contact: "jane@example.com",
-            role: "Client"
-        },
-        screenshots: [
-            "path/to/screenshot1.jpg",
-            "path/to/screenshot2.jpg"
-        ]
-    };
-
-    // Update modal content
-    document.getElementById('transactionDetails').textContent = mockData.transactionDetails;
-    document.getElementById('transactionDate').textContent = mockData.date;
-    document.getElementById('voucherInfo').innerHTML = `
-        <strong>Name:</strong> ${mockData.voucher.name}<br>
-        <strong>Contact:</strong> ${mockData.voucher.contact}<br>
-        <strong>Role:</strong> ${mockData.voucher.role}
-    `;
-    document.getElementById('recipientInfo').innerHTML = `
-        <strong>Name:</strong> ${mockData.recipient.name}<br>
-        <strong>Contact:</strong> ${mockData.recipient.contact}<br>
-        <strong>Role:</strong> ${mockData.recipient.role}
-    `;
-
-    // Show modal
-    modal.style.display = "block";
-}
-
-// Theme management
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.classList.remove('light-mode', 'dark-mode');
@@ -169,10 +115,8 @@ function initializeTheme() {
     }
 }
 
-// Call initializeTheme when the DOM loads
 document.addEventListener('DOMContentLoaded', initializeTheme);
 
-// Theme Toggle
 const themeToggle = document.getElementById('themeToggle');
 if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -189,9 +133,7 @@ if (themeToggle) {
     });
 }
 
-// Learn More Page Functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Slideshow functionality - only run if elements exist
     const slides = document.querySelectorAll('.slide');
     const slideshow = document.querySelector('.process-slideshow');
     
@@ -210,11 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentSlideElement = slides[currentSlide];
             const nextSlideElement = slides[index];
 
-            // Update indicators
             indicators.forEach(indicator => indicator.classList.remove('active'));
             indicators[index].classList.add('active');
 
-            // Set initial positions
             if (direction === 'next') {
                 nextSlideElement.style.transform = 'translateX(100%)';
             } else {
@@ -223,17 +163,14 @@ document.addEventListener('DOMContentLoaded', function() {
             nextSlideElement.style.opacity = '0';
             nextSlideElement.style.display = 'block';
 
-            // Trigger transition
             setTimeout(() => {
                 currentSlideElement.style.transform = direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)';
                 currentSlideElement.style.opacity = '0';
                 nextSlideElement.style.transform = 'translateX(0)';
                 nextSlideElement.style.opacity = '1';
 
-                // Update current slide
                 currentSlide = index;
 
-                // Reset transition state
                 setTimeout(() => {
                     currentSlideElement.style.display = 'none';
                     isTransitioning = false;
@@ -259,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(slideInterval);
         }
 
-        // Event listeners for controls
         if (prevButton && nextButton) {
             prevButton.addEventListener('click', () => {
                 stopSlideshow();
@@ -274,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Manual navigation with indicators
         indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', () => {
                 if (index === currentSlide) return;
@@ -284,15 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Start automatic slideshow
         startSlideshow();
 
-        // Pause on hover
         slideshow.addEventListener('mouseenter', stopSlideshow);
         slideshow.addEventListener('mouseleave', startSlideshow);
     }
 
-    // Animate trust score progress bars on scroll
     const progressBars = document.querySelectorAll('.progress-bar');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -306,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     progressBars.forEach(bar => observer.observe(bar));
 
-    // Animate cards on scroll with stagger effect
     function createStaggeredObserver(elements, className, baseDelay = 0, increment = 0.1) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, index) => {
@@ -322,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.forEach(element => observer.observe(element));
     }
 
-    // Apply staggered animations to different card types
     const securityCards = document.querySelectorAll('.security-card');
     const requirementCards = document.querySelectorAll('.requirement-card');
     const trustLevels = document.querySelectorAll('.trust-level');
@@ -331,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
     createStaggeredObserver(requirementCards, 'fade-in-up', 0.2);
     createStaggeredObserver(trustLevels, 'fade-in-up', 0.3);
 
-    // Add CSS classes for animations
     const style = document.createElement('style');
     style.textContent = `
         .security-card, .requirement-card, .trust-level {
@@ -351,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
 
-    // Animate CTA button with smooth pulse
     const ctaButton = document.querySelector('.cta-section .btn');
     if (ctaButton) {
         let isPulsing = false;
@@ -372,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setInterval(pulseAnimation, 3000);
 
-        // Add hover effect
         ctaButton.addEventListener('mouseenter', () => {
             ctaButton.style.transform = 'scale(1.05)';
             ctaButton.style.boxShadow = '0 0 30px rgba(187, 134, 252, 0.3)';

@@ -1,17 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBDzyWfwB54Bo-ZrIykJCJHVQe6nQriqUU",
-    authDomain: "voucher-df8cc.firebaseapp.com",
-    projectId: "voucher-df8cc",
-    storageBucket: "voucher-df8cc.firebasestorage.app",
-    messagingSenderId: "1066514451346",
-    appId: "1:1066514451346:web:1bf82433cc460b6775cf4b"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { auth } from './firebase-config.js';
 
 function usernameToEmail(username) {
     return `${username}@voucher-df8cc.firebaseapp.com`;
@@ -78,7 +66,7 @@ async function logout() {
     }
 }
 
-async function checkAndRedirectIfLoggedIn() {
+export async function checkAndRedirectIfLoggedIn() {
     const user = await checkAuthStatus();
     if (user) {
         window.location.href = 'https://lugers-vs.netlify.app/templates/dashboard';
