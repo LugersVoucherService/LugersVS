@@ -107,19 +107,15 @@ class VouchManager {
             
             let q = query(vouchesRef);
             
-            // Add search filter if provided
             if (options.search) {
                 const searchTerm = options.search.trim();
-                // Search by Roblox ID in the profile link
                 q = query(q, where('yourProfile.robloxLink', '>=', searchTerm), 
                          where('yourProfile.robloxLink', '<=', searchTerm + '\uf8ff'));
             }
             
-            // Add sorting
             const sortDirection = options.sort === 'oldest' ? 'asc' : 'desc';
             q = query(q, orderBy('createdAt', sortDirection));
             
-            // Add pagination
             const startIndex = (this.currentPage - 1) * this.itemsPerPage;
             q = query(q, limit(this.itemsPerPage));
 
@@ -130,11 +126,10 @@ class VouchManager {
                 vouches.push({ id: doc.id, ...data });
             });
 
-            // Get total count for pagination
             const totalSnapshot = await getDocs(query(vouchesRef));
             this.totalPages = Math.ceil(totalSnapshot.size / this.itemsPerPage);
 
-            this.renderVouches(vouches);
+            await this.renderVouches(vouches);
             this.updatePaginationUI();
         } catch (error) {
             console.error('Load error:', error);
@@ -251,15 +246,28 @@ class VouchManager {
         }
     }
 
-    renderVouches(vouches) {
-        const grid = document.querySelector('.vouches-grid');
-        if (!grid) return;
-
-        grid.innerHTML = vouches.map(vouch => this.createVouchCard(vouch)).join('');
-        this.initializeObserver();
+    async fetchRobloxData(userId) {
+        if (!userId) return null;
+        try {
+            const userResponse = await fetch(`https://lugersvsapi.pythonanywhere.com/roblox/user/${userId}`);
+            const thumbnailResponse = await fetch(`https://lugersvsapi.pythonanywhere.com/roblox/thumbnail/user/${userId}`);
+            
+            const userData = await userResponse.json();
+            const thumbnailData = await thumbnailResponse.json();
+            
+            return {
+                displayName: userData.displayName,
+                name: userData.name,
+                id: userData.id,
+                thumbnail: thumbnailData.imageUrl
+            };
+        } catch (error) {
+            console.warn('Failed to fetch Roblox data:', error);
+            return null;
+        }
     }
 
-    createVouchCard(vouch) {
+    async createVouchCard(vouch) {
         const date = vouch.createdAt ? new Date(vouch.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown Date';
 
         const getUserId = (profileData) => {
@@ -268,86 +276,77 @@ class VouchManager {
             return match ? match[1] : null;
         };
 
+        const truncateText = (text, maxLength) => {
+            if (!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength - 2) + '..' : text;
+        };
+
         const userId = getUserId(vouch.yourProfile);
         const defaultImage = 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-310966282D3529E36976BF6B07B1DC90-Png/150/150/AvatarHeadshot/Webp/noFilter';
-
-        const fetchRobloxUsername = async (userId) => {
-            if (!userId) return 'Unknown User';
-            try {
-                const response = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-                if (!response.ok) throw new Error('Failed to fetch username');
-                const data = await response.json();
-                return data.name || `${userId}`;
-            } catch (error) {
-                console.warn('Failed to fetch username:', error);
-                return `${userId}`;
-            }
-        };
         
-        const fetchProfileImage = async (imgElement) => {
-            if (!userId) {
-                imgElement.src = defaultImage;
-                return;
-            }
-            try {
-                // Request the thumbnail JSON data
-                const response = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const jsonData = await response.json();
-                // Assuming the API returns an object with a "data" array that contains an "imageUrl" property:
-                const imageUrl = jsonData.data && jsonData.data[0] && jsonData.data[0].imageUrl;
-                
-                // If a valid imageUrl is returned, use it; otherwise, use the default image.
-                imgElement.src = imageUrl ? imageUrl : defaultImage;
-                
-                // Fallback in case the image fails to load in the browser
-                imgElement.onerror = () => {
-                    console.warn('Failed to load profile image, using default');
-                    imgElement.src = defaultImage;
-                };
-            } catch (error) {
-                console.warn('Failed to load profile image:', error);
-                imgElement.src = defaultImage;
-            }
-        };
-        
+        const robloxData = await this.fetchRobloxData(userId);
+        const displayName = truncateText(robloxData?.displayName || 'Unknown User', 14);
+        const username = truncateText(robloxData?.name || userId || 'Unknown User', 17);
+        const avatarUrl = robloxData?.thumbnail || defaultImage;
 
         const card = document.createElement('div');
-        card.className = 'vouch-card';
+        card.className = 'trade-card fade-in';
         card.dataset.vouchId = vouch.id;
         
         card.innerHTML = `
-                <div class="vouch-header">
-                    <div class="vouch-meta">
-                    <div class="profile-section">
-                        <div class="profile-image">
-                            <img src="${defaultImage}" alt="Profile" class="avatar-image">
-                    </div>
-                        <div class="user-details">
-                            <span class="user-email">${userId || 'Unknown User'}</span>
-                    <span class="vouch-date">
-                        <i class="far fa-clock"></i> ${date}
-                        </span>
-                    </div>
-                </div>
-                    <div class="verification-status ${vouch.verified ? 'verified' : 'pending'}">
-                        <i class="fas ${vouch.verified ? 'fa-check-circle' : 'fa-clock'}"></i>
-                        ${vouch.verified ? 'Verified' : 'Pending'}
+            <div class="trade-verification-status ${vouch.verified ? 'verified' : 'pending'}">
+                <i class="fas fa-shield-alt"></i>
+                <span>${vouch.verified ? 'Verified' : 'Pending'}</span>
+            </div>
+            
+            <div class="trade-card-header">
+                <div class="trade-card-meta">
+                    <div class="trade-profile-section">
+                        <div class="trade-profile-image">
+                            <img src="${avatarUrl}" alt="Profile" class="avatar-image">
+                        </div>
+                        <div class="trade-user-info">
+                            <div class="trade-user-basic-info">
+                                <span class="trade-displayname">${displayName}</span>
+                                <span class="trade-username">@${username}</span>
+                                <span class="trade-date">
+                                    <i class="far fa-clock"></i>
+                                    <span class="date-text">${date}</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="vouch-content">
-                <p>${vouch.description || ''}</p>
-            </div>
+            
+            <button class="trade-details-btn">
+                <i class="fas fa-eye"></i>
+                View Trade Details
+            </button>
         `;
 
-        // Fetch profile image once after card is created
-        const imgElement = card.querySelector('.avatar-image');
-        fetchProfileImage(imgElement);
+        return card;
+    }
 
-        return card.outerHTML;
+    async renderVouches(vouches) {
+        const grid = document.querySelector('.vouches-grid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'loading-indicator';
+        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading vouches...';
+        grid.appendChild(loadingIndicator);
+
+        try {
+            const vouchCards = await Promise.all(vouches.map(vouch => this.createVouchCard(vouch)));
+            grid.innerHTML = '';
+            vouchCards.forEach(card => grid.appendChild(card));
+            this.initializeObserver();
+        } catch (error) {
+            console.error('Error rendering vouches:', error);
+            grid.innerHTML = '<div class="error-message">Failed to load vouches. Please try again later.</div>';
+        }
     }
 
     generateBadges(badges) {
@@ -390,7 +389,6 @@ class VouchManager {
             return;
         }
 
-        // Reset to first page when searching
         this.currentPage = 1;
         this.loadVouches({ search: query.trim() });
     }
@@ -399,7 +397,6 @@ class VouchManager {
         const sortSelect = document.querySelector('.filter-select[name="sort"]');
         const sort = sortSelect ? sortSelect.value : 'recent';
         
-        // Reset to first page when changing filters
         this.currentPage = 1;
         this.loadVouches({ sort });
     }
@@ -451,14 +448,12 @@ class VouchManager {
 
         paginationContainer.innerHTML = html;
 
-        // Update prev/next buttons
         const prevBtn = document.querySelector('.pagination-btn:first-child');
         const nextBtn = document.querySelector('.pagination-btn:last-child');
         
         if (prevBtn) prevBtn.classList.toggle('disabled', this.currentPage === 1);
         if (nextBtn) nextBtn.classList.toggle('disabled', this.currentPage === this.totalPages);
 
-        // Add click handlers
         document.querySelectorAll('.page-number').forEach(num => {
             num.addEventListener('click', () => {
                 const page = parseInt(num.dataset.page);
@@ -498,16 +493,12 @@ class VouchManager {
         
         document.body.appendChild(errorToast);
         
-        // Animate in
         setTimeout(() => errorToast.classList.add('show'), 10);
-        
-        // Auto dismiss after 5 seconds
         setTimeout(() => {
             errorToast.classList.remove('show');
             setTimeout(() => errorToast.remove(), 300);
         }, 5000);
         
-        // Handle manual close
         errorToast.querySelector('.close-error').addEventListener('click', () => {
             errorToast.classList.remove('show');
             setTimeout(() => errorToast.remove(), 300);
@@ -529,7 +520,6 @@ class VouchManager {
         modalContainer.style.display = 'block';
         setTimeout(() => modalContainer.classList.add('modal-show'), 10);
 
-        // Setup form handlers
         const form = document.getElementById('createVouchForm');
         const verifyYourRoblox = document.getElementById('verifyYourRoblox');
         const verifyPartnerRoblox = document.getElementById('verifyPartnerRoblox');
@@ -538,7 +528,6 @@ class VouchManager {
         const preview1 = document.getElementById('preview1');
         const preview2 = document.getElementById('preview2');
 
-        // Handle Roblox profile verification
         const verifyRobloxProfile = async (input, previewDiv) => {
             const url = input.value;
             if (!url) return;
@@ -549,11 +538,10 @@ class VouchManager {
                     throw new Error('Invalid Roblox profile URL');
                 }
 
-                // Here you would typically make an API call to verify the Roblox profile
-                // For now, we'll just show a success message
+
                 previewDiv.innerHTML = `
                     <div class="verified-profile">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-shield-check"></i>
                         <span>Profile Verified</span>
                     </div>
                 `;
@@ -576,7 +564,6 @@ class VouchManager {
             );
         };
 
-        // Handle screenshot previews
         const handleFileSelect = (file, previewDiv) => {
             if (file) {
                 if (file.size > 1024 * 1024) {
@@ -603,7 +590,6 @@ class VouchManager {
         screenshot1.onchange = (e) => handleFileSelect(e.target.files[0], preview1);
         screenshot2.onchange = (e) => handleFileSelect(e.target.files[0], preview2);
 
-        // Handle form submission
         form.onsubmit = async (e) => {
             e.preventDefault();
             const submitButton = form.querySelector('button[type="submit"]');
@@ -615,11 +601,9 @@ class VouchManager {
 
                 const formData = new FormData(form);
                 
-                // Get the files
                 const screenshot1 = document.getElementById('screenshot1').files[0];
                 const screenshot2 = document.getElementById('screenshot2').files[0];
 
-                // Validate that both screenshots are selected
                 if (!screenshot1 || !screenshot2) {
                     throw new Error('Please select both screenshots');
                 }
@@ -643,7 +627,6 @@ class VouchManager {
 
                 await this.createVouch(vouchData);
                 
-                // Show success message
                 const successMessage = document.createElement('div');
                 successMessage.className = 'success-message';
                 successMessage.innerHTML = `
@@ -652,7 +635,6 @@ class VouchManager {
                 `;
                 form.appendChild(successMessage);
 
-                // Close modal after delay
                 setTimeout(() => {
                     modalContainer.classList.remove('modal-show');
                     setTimeout(() => {
@@ -668,14 +650,12 @@ class VouchManager {
             }
         };
 
-        // Handle close button
         const closeBtn = modalContainer.querySelector('.close-modal');
         closeBtn.onclick = () => {
             modalContainer.classList.remove('modal-show');
             setTimeout(() => modalContainer.style.display = 'none', 300);
         };
 
-        // Handle click outside
         modalContainer.onclick = (e) => {
             if (e.target === modalContainer) {
                 modalContainer.classList.remove('modal-show');
@@ -690,7 +670,6 @@ class VouchManager {
         }
 
         try {
-            // Reload verified users to ensure we have the latest data
             await verifiedUsersManager.loadVerifiedUsers();
             const isVerified = verifiedUsersManager.isUserVerified(this.currentUser.email);
             
@@ -700,33 +679,104 @@ class VouchManager {
             return false;
         }
     }
+
+    async populateModalContent(vouchData) {
+        const getUserInfo = async (profileData) => {
+            if (!profileData?.robloxLink) return { id: null, username: 'Unknown', displayName: 'Unknown User' };
+            const match = profileData.robloxLink.match(/users\/(\d+)/);
+            const userId = match ? match[1] : null;
+            const robloxData = await this.fetchRobloxData(userId);
+            return {
+                id: userId,
+                username: robloxData?.name || 'Unknown',
+                displayName: robloxData?.displayName || 'Unknown User',
+                thumbnail: robloxData?.thumbnail || 'https://tr.rbxcdn.com/30DAY-AvatarHeadshot-310966282D3529E36976BF6B07B1DC90-Png/150/150/AvatarHeadshot/Webp/noFilter'
+            };
+        };
+
+        const traderInfo = await getUserInfo(vouchData.yourProfile);
+        const partnerInfo = await getUserInfo(vouchData.partnerProfile);
+
+        const updateTraderSection = (prefix, info, profile) => {
+            document.querySelector(`#${prefix}ProfileImage img`).src = info.thumbnail;
+            document.querySelector(`#${prefix}DisplayName`).textContent = info.displayName;
+            document.querySelector(`#${prefix}Username`).textContent = '@' + info.username;
+            
+            const robloxLink = document.querySelector(`#${prefix}RobloxLink`);
+            robloxLink.href = profile?.robloxLink || '#';
+            
+            const discordId = document.querySelector(`#${prefix}DiscordId`);
+            discordId.textContent = profile?.discordId || 'N/A';
+            const copyBtn = discordId.nextElementSibling;
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(profile?.discordId || '');
+                    this.showCopyFeedback(copyBtn);
+                };
+            }
+            
+            const items = document.querySelector(`#${prefix}Items`);
+            items.textContent = profile?.offeredItems || 'No items specified';
+        };
+
+        updateTraderSection('trader', traderInfo, vouchData.yourProfile);
+        updateTraderSection('partner', partnerInfo, vouchData.partnerProfile);
+
+        const screenshot1Link = document.querySelector('#screenshot1Link');
+        const screenshot2Link = document.querySelector('#screenshot2Link');
+        
+        if (vouchData.screenshots && vouchData.screenshots.length > 0) {
+            screenshot1Link.href = vouchData.screenshots[0];
+            screenshot1Link.classList.remove('disabled');
+            
+            if (vouchData.screenshots.length > 1) {
+                screenshot2Link.href = vouchData.screenshots[1];
+                screenshot2Link.classList.remove('disabled');
+            } else {
+                screenshot2Link.classList.add('disabled');
+            }
+        } else {
+            screenshot1Link.classList.add('disabled');
+            screenshot2Link.classList.add('disabled');
+        }
+    }
+
+    showCopyFeedback(element) {
+        const originalText = element.innerHTML;
+        element.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        element.style.background = 'rgba(76, 175, 80, 0.15)';
+        element.style.color = '#4CAF50';
+        
+        setTimeout(() => {
+            element.innerHTML = originalText;
+            element.style.background = '';
+            element.style.color = '';
+        }, 2000);
+    }
 }
 
 class VouchModal {
-    constructor() {
+    constructor(vouchManager) {
         this.modal = document.getElementById('vouchModal');
+        this.vouchManager = vouchManager;
         this.initializeEventListeners();
     }
 
     initializeEventListeners() {
-        // Close button
         const closeBtn = this.modal.querySelector('.close-modal');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.hide());
         }
 
-        // Click outside to close
         window.addEventListener('click', (e) => {
             if (e.target === this.modal) this.hide();
         });
 
-        // Prevent modal content clicks from closing
         const modalContent = this.modal.querySelector('.modal-content');
         if (modalContent) {
             modalContent.addEventListener('click', (e) => e.stopPropagation());
         }
 
-        // Handle Discord ID copying
         document.addEventListener('click', async (e) => {
             const copyBtn = e.target.closest('.copy-id');
             if (copyBtn) {
@@ -755,7 +805,7 @@ class VouchModal {
             const vouchDoc = await getDoc(doc(db, 'Vouches', vouchId));
             if (vouchDoc.exists()) {
                 const vouchData = vouchDoc.data();
-                this.populateModalContent(vouchData);
+                this.vouchManager.populateModalContent(vouchData);
             } else {
                 throw new Error('Vouch not found');
             }
@@ -766,132 +816,6 @@ class VouchModal {
             errorToast.textContent = 'Failed to load vouch details';
             document.body.appendChild(errorToast);
             setTimeout(() => errorToast.remove(), 3000);
-        }
-    }
-
-    async fetchRobloxUsername(userId) {
-        if (!userId) return 'Unknown User';
-        try {
-            const response = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-            if (!response.ok) throw new Error('Failed to fetch username');
-            const data = await response.json();
-            return data.name || userId;
-        } catch (error) {
-            console.warn('Failed to fetch username:', error);
-            return userId;
-        }
-    }
-
-    async populateModalContent(vouchData) {
-        // Update verification badge
-        const verificationBadge = document.querySelector('.verification-badge');
-        if (vouchData.verified) {
-            verificationBadge.innerHTML = '<i class="fas fa-shield-check"></i> Verified Trade';
-            verificationBadge.style.background = 'rgba(76, 175, 80, 0.1)';
-            verificationBadge.style.color = '#4CAF50';
-        } else {
-            verificationBadge.innerHTML = '<i class="fas fa-clock"></i> Pending Verification';
-            verificationBadge.style.background = 'rgba(255, 193, 7, 0.1)';
-            verificationBadge.style.color = '#FFC107';
-        }
-
-        // Extract Roblox usernames and IDs from profile links
-        const getUserInfo = async (url) => {
-            try {
-                const match = url.match(/users\/(\d+)/);
-                const userId = match ? match[1] : null;
-                const username = userId ? await this.fetchRobloxUsername(userId) : 'Unknown';
-                return {
-                    id: userId,
-                    username: username
-                };
-            } catch {
-                return { id: null, username: 'Unknown' };
-            }
-        };
-
-        // Function to load profile image
-        const loadProfileImage = async (userId, imageElement) => {
-            if (!userId) {
-                imageElement.src = defaultImage;
-                return;
-            }
-            try {
-                const response = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const jsonData = await response.json();
-                const imageUrl = jsonData.data && jsonData.data[0] && jsonData.data[0].imageUrl;
-                imageElement.src = imageUrl || defaultImage;
-                
-                imageElement.onerror = () => {
-                    console.warn('Failed to load profile image, using default');
-                    imageElement.src = defaultImage;
-                };
-            } catch (error) {
-                console.warn('Failed to load profile image:', error);
-                imageElement.src = defaultImage;
-            }
-        };
-
-        // Update trader information
-        if (vouchData.yourProfile) {
-            const traderInfo = await getUserInfo(vouchData.yourProfile.robloxLink);
-            document.getElementById('traderRobloxName').textContent = traderInfo.username;
-            document.getElementById('traderRobloxLink').href = vouchData.yourProfile.robloxLink;
-            
-            const traderDiscordElement = document.getElementById('traderDiscordId');
-            traderDiscordElement.querySelector('.discord-username').textContent = vouchData.yourProfile.discordId;
-            
-            // Load trader profile image
-            const traderImage = document.querySelector('#traderProfileImage img');
-            if (traderImage) {
-                loadProfileImage(traderInfo.id, traderImage);
-            }
-            
-            document.getElementById('traderItems').textContent = vouchData.yourProfile.offeredItems;
-        }
-
-        // Update partner information
-        if (vouchData.partnerProfile) {
-            const partnerInfo = await getUserInfo(vouchData.partnerProfile.robloxLink);
-            document.getElementById('partnerRobloxName').textContent = partnerInfo.username;
-            document.getElementById('partnerRobloxLink').href = vouchData.partnerProfile.robloxLink;
-            
-            const partnerDiscordElement = document.getElementById('partnerDiscordId');
-            partnerDiscordElement.querySelector('.discord-username').textContent = vouchData.partnerProfile.discordId;
-            
-            // Load partner profile image
-            const partnerImage = document.querySelector('#partnerProfileImage img');
-            if (partnerImage) {
-                loadProfileImage(partnerInfo.id, partnerImage);
-            }
-            
-            document.getElementById('partnerItems').textContent = vouchData.partnerProfile.offeredItems;
-        }
-
-        // Set up copy functionality for Discord IDs
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.onclick = async function() {
-                const discordId = this.closest('.discord-tag').querySelector('.discord-username').textContent;
-                try {
-                    await navigator.clipboard.writeText(discordId);
-                    this.classList.add('copied');
-                    setTimeout(() => this.classList.remove('copied'), 1500);
-                } catch (err) {
-                    console.error('Failed to copy:', err);
-                }
-            };
-        });
-
-        // Update screenshots
-        if (vouchData.screenshots && vouchData.screenshots.length > 0) {
-            document.getElementById('screenshot1Link').href = vouchData.screenshots[0];
-            
-            if (vouchData.screenshots.length > 1) {
-                document.getElementById('screenshot2Link').href = vouchData.screenshots[1];
-            }
         }
     }
 
@@ -924,13 +848,32 @@ class VouchModal {
 
 document.addEventListener('DOMContentLoaded', () => {
     const vouchManager = new VouchManager();
-    const vouchModal = new VouchModal();
+    const vouchModal = new VouchModal(vouchManager);
 
-    document.querySelector('.vouches-grid')?.addEventListener('click', (e) => {
-        const card = e.target.closest('.vouch-card');
+    document.querySelector('.vouches-grid').addEventListener('click', (e) => {
+        const card = e.target.closest('.trade-card');
         if (card) {
+            e.preventDefault();
+            e.stopPropagation();
             const vouchId = card.dataset.vouchId;
-            vouchModal.show(vouchId);
+            if (vouchId) {
+                vouchModal.show(vouchId);
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const detailsBtn = e.target.closest('.trade-details-btn');
+        if (detailsBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const card = detailsBtn.closest('.trade-card');
+            if (card) {
+                const vouchId = card.dataset.vouchId;
+                if (vouchId) {
+                    vouchModal.show(vouchId);
+                }
+            }
         }
     });
 });
