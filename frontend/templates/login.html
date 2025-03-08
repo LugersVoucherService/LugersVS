@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="https://favim.com/pd/s11/orig/8/879/8798/87989/girl-gun-grunge-Favim.com-8798983.jpg">
     <link rel="stylesheet" href="../static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             height: 100vh;
@@ -20,16 +21,57 @@
         }
         .auth-container {
             margin: 0;
-            background: var(--dark-surface);
             width: 100%;
             max-width: 600px;
-            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
         }
-        .dark-mode .auth-container {
-            background: var(--dark-surface);
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--dark-text-secondary);
+            font-size: 1.1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
         }
-        .light-mode .auth-container {
-            background: var(--light-surface);
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .auth-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-btn .btn-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .auth-btn:hover .auth-icon {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .background-shapes .shape {
+            animation: float 20s infinite ease-in-out;
+        }
+        .background-shapes .circle {
+            animation-delay: 0s;
+        }
+        .background-shapes .triangle {
+            animation-delay: -5s;
+        }
+        .background-shapes .square {
+            animation-delay: -10s;
         }
     </style>
 </head>
@@ -38,6 +80,8 @@
         <div class="shape circle"></div>
         <div class="shape triangle"></div>
         <div class="shape square"></div>
+        <div class="shape hexagon"></div>
+        <div class="shape diamond"></div>
     </div>
 
     <nav class="navbar">
@@ -55,10 +99,13 @@
     <main class="container">
         <div class="auth-container">
             <h2 class="auth-title">Welcome Back</h2>
+            <p class="welcome-text">Sign in to access your profile and manage your trades</p>
             <div class="auth-options">
                 <button class="auth-btn google-btn" id="googleAuth">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" class="auth-icon">
-                    Continue with Google
+                    <div class="btn-content">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" class="auth-icon">
+                        <span>Continue with Google</span>
+                    </div>
                 </button>
                 <div class="form-error"></div>
                 <div class="form-success"></div>
@@ -68,21 +115,42 @@
             </div>
         </div>
     </main>
-
-    <script type="module" src="../static/js/auth.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await window.checkAndRedirectIfLoggedIn();
-            initializeTheme();
+    <script type="module">
+        import { checkAndRedirectIfLoggedIn } from '../static/js/auth.js';
+        window.addEventListener('load', async () => {
+            try {
+                await checkAndRedirectIfLoggedIn();
+                initializeTheme();
+                initializeInteractions();
+            } catch (error) {
+                console.error('Error during initialization:', error);
+            }
         });
+    </script>
+    <script>
+        function initializeInteractions() {
+            const authBtn = document.getElementById('googleAuth');
+            authBtn.addEventListener('mouseover', () => {
+                authBtn.style.transform = 'translateY(-2px)';
+            });
+            authBtn.addEventListener('mouseout', () => {
+                authBtn.style.transform = 'translateY(0)';
+            });
+        }
 
         document.getElementById('googleAuth').addEventListener('click', async () => {
+            const btn = document.getElementById('googleAuth');
+            btn.style.transform = 'scale(0.98)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 100);
+
             try {
                 await window.signInWithGoogle();
             } catch (error) {
                 const errorDiv = document.querySelector('.form-error');
                 errorDiv.textContent = error.message;
                 errorDiv.style.display = 'block';
+                errorDiv.classList.add('show');
+                setTimeout(() => errorDiv.classList.remove('show'), 5000);
             }
         });
 
