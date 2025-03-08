@@ -11,6 +11,7 @@ class VouchManager {
         this.itemsPerPage = 9;
         this.totalPages = 10;
         this.searchTimeout = null;
+        this.screenshots = [null, null];
         this.initialize();
     }
 
@@ -239,7 +240,16 @@ class VouchManager {
                 verifiedat: new Date()
             };
 
+            // Save to Vouches collection
             const docRef = await addDoc(vouchesRef, newVouch);
+
+            // Also save to user's trade history
+            const userHistoryRef = collection(db, 'Users', this.currentUser.email, 'TradeHistory');
+            await addDoc(userHistoryRef, {
+                ...newVouch,
+                vouchId: docRef.id
+            });
+
             return docRef.id;
         } catch (error) {
             throw error;
@@ -505,163 +515,256 @@ class VouchManager {
         });
     }
 
-    async showCreateVouchModal() {
-        if (!this.currentUser) {
-            this.showError('Please log in to create a vouch');
+    showCreateVouchModal() {
+        const modal = document.getElementById('createVouchModal');
+        if (!modal) {
+            console.error('Create vouch modal not found');
             return;
         }
 
-        if (!this.isVerified) {
-            this.showError('Only verified users can create vouches');
-            return;
+        // Get cached user credentials
+        const cachedCredentials = JSON.parse(localStorage.getItem('userCredentials') || '{}');
+        
+        // Update profile preview at the top
+        if (cachedCredentials.robloxId) {
+            const previewAvatar = document.getElementById('previewAvatar');
+            const previewDisplayName = document.getElementById('previewDisplayName');
+            const previewUsername = document.getElementById('previewUsername');
+            
+            if (previewAvatar) previewAvatar.src = cachedCredentials.robloxAvatar;
+            if (previewDisplayName) previewDisplayName.textContent = cachedCredentials.robloxDisplayName;
+            if (previewUsername) previewUsername.textContent = '@' + cachedCredentials.robloxUsername;
+            
+            // Auto-fill Roblox profile link
+            const yourRobloxLink = document.getElementById('yourRobloxLink');
+            if (yourRobloxLink) {
+                yourRobloxLink.value = `https://www.roblox.com/users/${cachedCredentials.robloxId}/profile`;
+                // Trigger verification automatically
+                const verifyBtn = document.getElementById('verifyYourRoblox');
+                if (verifyBtn) verifyBtn.click();
+            }
         }
 
-        const modalContainer = document.getElementById('createVouchModal');
-        modalContainer.style.display = 'block';
-        setTimeout(() => modalContainer.classList.add('modal-show'), 10);
+        // Auto-fill Discord ID
+        if (cachedCredentials.discordId) {
+            const yourDiscordId = document.querySelector('input[name="yourDiscordId"]');
+            if (yourDiscordId) {
+                yourDiscordId.value = cachedCredentials.discordId;
+            }
+        }
 
+        // Initialize screenshot upload functionality
+        this.initializeScreenshotUpload();
+
+        // Add form submission handler
         const form = document.getElementById('createVouchForm');
-        const verifyYourRoblox = document.getElementById('verifyYourRoblox');
-        const verifyPartnerRoblox = document.getElementById('verifyPartnerRoblox');
-        const screenshot1 = document.getElementById('screenshot1');
-        const screenshot2 = document.getElementById('screenshot2');
-        const preview1 = document.getElementById('preview1');
-        const preview2 = document.getElementById('preview2');
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                await this.handleVouchSubmission(form);
+            };
+        }
 
-        const verifyRobloxProfile = async (input, previewDiv) => {
-            const url = input.value;
-            if (!url) return;
+        // Show modal with animation
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        requestAnimationFrame(() => {
+            modal.classList.add('show');
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.opacity = '1';
+                modalContent.style.transform = 'translateY(0)';
+            }
+        });
 
-            try {
-                const userId = url.match(/users\/(\d+)/)?.[1];
-                if (!userId) {
-                    throw new Error('Invalid Roblox profile URL');
-                }
+        // Handle close button
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.onclick = (e) => {
+                e.preventDefault();
+                this.hideCreateVouchModal(modal);
+            };
+        }
 
-
-                previewDiv.innerHTML = `
-                    <div class="verified-profile">
-                        <i class="fas fa-shield-check"></i>
-                        <span>Profile Verified</span>
-                    </div>
-                `;
-            } catch (error) {
-                this.showError(error.message);
+        // Handle outside click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                this.hideCreateVouchModal(modal);
             }
         };
 
-        verifyYourRoblox.onclick = () => {
-            verifyRobloxProfile(
-                document.getElementById('yourRobloxLink'),
-                document.getElementById('yourProfilePreview')
-            );
+        // Prevent modal content clicks from closing
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.onclick = (e) => e.stopPropagation();
+        }
+    }
+
+    async handleVouchSubmission(form) {
+        try {
+            const submitBtn = form.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Vouch...';
+
+            const formData = new FormData(form);
+            const screenshots = this.screenshots || [];
+
+            if (screenshots.length !== 2) {
+                throw new Error('Please upload exactly 2 screenshots');
+            }
+
+            const vouchData = {
+                yourProfile: {
+                    robloxLink: formData.get('yourRobloxLink'),
+                    discordId: formData.get('yourDiscordId'),
+                    offeredItems: formData.get('yourItems')
+                },
+                partnerProfile: {
+                    robloxLink: formData.get('partnerRobloxLink'),
+                    discordId: formData.get('partnerDiscordId'),
+                    offeredItems: formData.get('partnerItems')
+                },
+                screenshots: screenshots
+            };
+
+            // Create the vouch
+            const vouchId = await this.createVouch(vouchData);
+            
+            // Show success message
+            this.showError('Vouch created successfully!');
+            
+            // Close modal and refresh vouches
+            this.hideCreateVouchModal(document.getElementById('createVouchModal'));
+            this.loadVouches();
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            this.showError(error.message || 'Failed to create vouch. Please try again.');
+        } finally {
+            const submitBtn = form.querySelector('.submit-btn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Create Vouch';
+        }
+    }
+
+    initializeScreenshotUpload() {
+        const dropArea = document.getElementById('screenshotDropArea');
+        const previews = [
+            document.getElementById('preview1'),
+            document.getElementById('preview2')
+        ];
+        const previewSlots = document.querySelectorAll('.preview-slot');
+        const removeButtons = document.querySelectorAll('.remove-preview');
+        let activeSlot = null;
+
+        const updatePreviews = () => {
+            this.screenshots.forEach((screenshot, index) => {
+                if (screenshot) {
+                    const url = URL.createObjectURL(screenshot);
+                    previews[index].src = url;
+                    previews[index].classList.add('active');
+                } else {
+                    previews[index].src = '';
+                    previews[index].classList.remove('active');
+                }
+            });
+
+            // Update active slot visual
+            previewSlots.forEach((slot, index) => {
+                slot.classList.toggle('active-paste-target', index === activeSlot);
+            });
         };
 
-        verifyPartnerRoblox.onclick = () => {
-            verifyRobloxProfile(
-                document.getElementById('partnerRobloxLink'),
-                document.getElementById('partnerProfilePreview')
-            );
-        };
+        const addScreenshot = (file, targetSlot = null) => {
+            if (!file || !file.type.startsWith('image/')) {
+                this.showError('Please select a valid image file');
+                return;
+            }
 
-        const handleFileSelect = (file, previewDiv) => {
-            if (file) {
-                if (file.size > 1024 * 1024) {
-                    this.showError('Image must be under 1MB');
+            if (file.size > 1024 * 1024) {
+                this.showError('Image must be under 1MB');
+                return;
+            }
+
+            // If a specific slot is targeted, use that
+            if (targetSlot !== null && targetSlot < 2) {
+                this.screenshots[targetSlot] = file;
+            } else {
+                // Otherwise find first empty slot
+                const emptySlot = this.screenshots.findIndex(s => !s);
+                if (emptySlot === -1) {
+                    this.showError('Maximum 2 screenshots allowed. Please remove one first.');
                     return;
                 }
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewDiv.innerHTML = `
-                        <img src="${e.target.result}" alt="Screenshot preview" style="
-                            max-width: 100%;
-                            height: 150px;
-                            object-fit: cover;
-                            border-radius: 6px;
-                            margin-top: 0.5rem;
-                        ">
-                    `;
-                };
-                reader.readAsDataURL(file);
+                this.screenshots[emptySlot] = file;
             }
+
+            updatePreviews();
+            activeSlot = null; // Reset active slot after adding
         };
 
-        screenshot1.onchange = (e) => handleFileSelect(e.target.files[0], preview1);
-        screenshot2.onchange = (e) => handleFileSelect(e.target.files[0], preview2);
+        // Handle paste events
+        document.addEventListener('paste', (e) => {
+            const items = Array.from(e.clipboardData.items);
+            const imageItem = items.find(item => item.type.startsWith('image/'));
+            
+            if (imageItem) {
+                const file = imageItem.getAsFile();
+                addScreenshot(file, activeSlot);
+            }
+        });
 
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const submitButton = form.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
+        // Handle drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
 
-            try {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        dropArea.addEventListener('dragenter', () => dropArea.classList.add('drag-active'));
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-active'));
+        dropArea.addEventListener('drop', (e) => {
+            dropArea.classList.remove('drag-active');
+            const file = e.dataTransfer.files[0];
+            if (file) addScreenshot(file, activeSlot);
+        });
 
-                const formData = new FormData(form);
-                
-                const screenshot1 = document.getElementById('screenshot1').files[0];
-                const screenshot2 = document.getElementById('screenshot2').files[0];
-
-                if (!screenshot1 || !screenshot2) {
-                    throw new Error('Please select both screenshots');
+        // Handle slot selection for paste targeting
+        previewSlots.forEach((slot, index) => {
+            slot.addEventListener('click', () => {
+                if (this.screenshots[index]) {
+                    // If slot has image, don't make it active
+                    activeSlot = null;
+                } else {
+                    activeSlot = index;
                 }
+                updatePreviews();
+            });
+        });
 
-                const vouchData = {
-                    yourProfile: {
-                        robloxLink: formData.get('yourRobloxLink'),
-                        discordId: formData.get('yourDiscordId'),
-                        offeredItems: formData.get('yourItems')
-                    },
-                    partnerProfile: {
-                        robloxLink: formData.get('partnerRobloxLink'),
-                        discordId: formData.get('partnerDiscordId'),
-                        offeredItems: formData.get('partnerItems')
-                    },
-                    screenshots: [
-                        await this.upload_GoFile(screenshot1),
-                        await this.upload_GoFile(screenshot2)
-                    ]
-                };
+        // Handle remove buttons
+        removeButtons.forEach((button, index) => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent slot selection when removing
+                this.screenshots[index] = null;
+                activeSlot = null; // Reset active slot after removing
+                updatePreviews();
+            });
+        });
+    }
 
-                await this.createVouch(vouchData);
-                
-                const successMessage = document.createElement('div');
-                successMessage.className = 'success-message';
-                successMessage.innerHTML = `
-                    <i class="fas fa-check-circle"></i>
-                    Vouch created successfully!
-                `;
-                form.appendChild(successMessage);
-
-                setTimeout(() => {
-                    modalContainer.classList.remove('modal-show');
-                    setTimeout(() => {
-                        modalContainer.style.display = 'none';
-                        this.loadVouches();
-                    }, 300);
-                }, 2000);
-
-            } catch (error) {
-                this.showError(error.message);
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            }
-        };
-
-        const closeBtn = modalContainer.querySelector('.close-modal');
-        closeBtn.onclick = () => {
-            modalContainer.classList.remove('modal-show');
-            setTimeout(() => modalContainer.style.display = 'none', 300);
-        };
-
-        modalContainer.onclick = (e) => {
-            if (e.target === modalContainer) {
-                modalContainer.classList.remove('modal-show');
-                setTimeout(() => modalContainer.style.display = 'none', 300);
-            }
-        };
+    hideCreateVouchModal(modal) {
+        modal.classList.remove('show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.opacity = '0';
+            modalContent.style.transform = 'translateY(-20px)';
+        }
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 300);
     }
 
     async checkVerificationStatus() {
