@@ -110,8 +110,10 @@ function initializeTheme() {
     
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
-        const icon = themeToggle.querySelector('.theme-toggle-icon');
-        icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        const icon = themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
     }
 }
 
@@ -126,8 +128,10 @@ if (themeToggle) {
         document.body.classList.toggle('light-mode');
         document.body.classList.toggle('dark-mode');
         
-        const icon = themeToggle.querySelector('.theme-toggle-icon');
-        icon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        const icon = themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
         
         localStorage.setItem('theme', newTheme);
     });

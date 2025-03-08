@@ -1,6 +1,6 @@
 import { verifiedUsersManager } from './verifiedUsers.js';
 import { auth, db } from './firebase-config.js';
-import { collection, addDoc, getDocs, query, orderBy, limit, getDoc, doc, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, query, orderBy, limit, getDoc, doc, where, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 class VouchManager {
@@ -12,6 +12,7 @@ class VouchManager {
         this.totalPages = 10;
         this.searchTimeout = null;
         this.screenshots = [null, null];
+        this.lastVouchTime = null;
         this.initialize();
     }
 
@@ -19,9 +20,10 @@ class VouchManager {
         try {
             await verifiedUsersManager.loadVerifiedUsers();
             
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 this.currentUser = user;
                 if (user) {
+                    await this.loadUserData(); // Load user data first
                     this.isVerified = verifiedUsersManager.isUserVerified(user.email);
                     this.updateUI();
                 } else {
@@ -223,6 +225,12 @@ class VouchManager {
                 throw new Error('Only verified users can create vouches');
             }
 
+            // Check cooldown before proceeding
+            if (!this.canVouch()) {
+                const minutesLeft = this.getTimeUntilNextVouch();
+                throw new Error(`Please wait ${minutesLeft} minutes before creating another vouch.`);
+            }
+
             const imageUrls = await Promise.all(
                 vouchData.screenshots.map(file => this.upload_GoFile(file))
             );
@@ -240,10 +248,11 @@ class VouchManager {
                 verifiedat: new Date()
             };
 
-            // Save to Vouches collection
-            const docRef = await addDoc(vouchesRef, newVouch);
+            // Update the vouch timestamp first
+            await this.updateVouchTimestamp();
 
-            // Also save to user's trade history
+            // Then create the vouch
+            const docRef = await addDoc(vouchesRef, newVouch);
             const userHistoryRef = collection(db, 'Users', this.currentUser.email, 'TradeHistory');
             await addDoc(userHistoryRef, {
                 ...newVouch,
@@ -602,42 +611,47 @@ class VouchManager {
 
     async handleVouchSubmission(form) {
         try {
+            if (!this.canVouch()) {
+                const minutesLeft = this.getTimeUntilNextVouch();
+                throw new Error(`Please wait ${minutesLeft} minutes before creating another vouch.`);
+            }
+
             const submitBtn = form.querySelector('.submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Vouch...';
 
-                const formData = new FormData(form);
+            const formData = new FormData(form);
             const screenshots = this.screenshots || [];
 
             if (screenshots.length !== 2) {
                 throw new Error('Please upload exactly 2 screenshots');
-                }
+            }
 
-                const vouchData = {
-                    yourProfile: {
-                        robloxLink: formData.get('yourRobloxLink'),
-                        discordId: formData.get('yourDiscordId'),
-                        offeredItems: formData.get('yourItems')
-                    },
-                    partnerProfile: {
-                        robloxLink: formData.get('partnerRobloxLink'),
-                        discordId: formData.get('partnerDiscordId'),
-                        offeredItems: formData.get('partnerItems')
-                    },
+            const vouchData = {
+                yourProfile: {
+                    robloxLink: formData.get('yourRobloxLink'),
+                    discordId: formData.get('yourDiscordId'),
+                    offeredItems: formData.get('yourItems')
+                },
+                partnerProfile: {
+                    robloxLink: formData.get('partnerRobloxLink'),
+                    discordId: formData.get('partnerDiscordId'),
+                    offeredItems: formData.get('partnerItems')
+                },
                 screenshots: screenshots
-                };
+            };
 
             // Create the vouch
             const vouchId = await this.createVouch(vouchData);
-                
-                // Show success message
+            
+            // Show success message
             this.showError('Vouch created successfully!');
             
             // Close modal and refresh vouches
             this.hideCreateVouchModal(document.getElementById('createVouchModal'));
-                        this.loadVouches();
+            this.loadVouches();
 
-            } catch (error) {
+        } catch (error) {
             console.error('Submission error:', error);
             this.showError(error.message || 'Failed to create vouch. Please try again.');
         } finally {
@@ -855,6 +869,65 @@ class VouchManager {
             element.style.background = '';
             element.style.color = '';
         }, 2000);
+    }
+
+    async loadUserData() {
+        try {
+            if (!this.currentUser) return;
+
+            const verifiedRef = collection(db, 'Verified');
+            const q = query(verifiedRef, where('email', '==', this.currentUser.email));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const userData = querySnapshot.docs[0].data();
+                this.lastVouchTime = userData.lastVouchTime?.toDate() || null;
+                this.isVerified = true;
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            this.showError('Failed to load user data');
+        }
+    }
+
+    canVouch() {
+        if (!this.lastVouchTime) return true;
+        
+        const now = new Date();
+        const minutesSinceLastVouch = (now - this.lastVouchTime) / (1000 * 60);
+        return minutesSinceLastVouch >= 60; // 1 hour cooldown
+    }
+
+    getTimeUntilNextVouch() {
+        if (!this.lastVouchTime) return 0;
+        
+        const now = new Date();
+        const nextVouchTime = new Date(this.lastVouchTime);
+        nextVouchTime.setHours(nextVouchTime.getHours() + 1);
+        
+        const timeLeft = nextVouchTime - now;
+        const minutesLeft = Math.ceil(timeLeft / (1000 * 60));
+        return minutesLeft;
+    }
+
+    async updateVouchTimestamp() {
+        try {
+            const verifiedRef = collection(db, 'Verified');
+            const q = query(verifiedRef, where('email', '==', this.currentUser.email));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                await updateDoc(doc(db, 'Verified', userDoc.id), {
+                    lastVouchTime: serverTimestamp()
+                });
+                this.lastVouchTime = new Date();
+            }
+        } catch (error) {
+            console.error('Error updating vouch timestamp:', error);
+            throw error;
+        }
     }
 }
 

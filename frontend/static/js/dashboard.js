@@ -357,7 +357,8 @@ class DashboardManager {
             owner: '<i class="fas fa-crown"></i>',
             admin: '<i class="fas fa-star"></i>',
             moderator: '<i class="fas fa-shield-alt"></i>',
-            verified: '<i class="fas fa-check"></i>'
+            verified: '<i class="fas fa-check"></i>',
+            tester: '<i class="fas fa-vial"></i>'
         };
         return icons[role.toLowerCase()] || '<i class="fas fa-user"></i>';
     }
@@ -404,7 +405,6 @@ class DashboardManager {
         if (modal) {
             modal.classList.add('show');
             
-            // Pre-fill the form with current values
             const discordInput = document.getElementById('editDiscordId');
             const robloxInput = document.getElementById('editRobloxId');
             
